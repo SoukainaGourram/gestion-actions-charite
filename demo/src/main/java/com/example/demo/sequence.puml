@@ -1,0 +1,19 @@
+@startuml
+
+actor Utilisateur
+
+participant "ActionController"
+participant "ActionService"
+participant "ActionRepository"
+database "Database"
+
+Utilisateur -> ActionController : Faire un don
+ActionController -> ActionService : saveDonation()
+ActionService -> ActionRepository : save()
+ActionRepository -> Database : insert donation
+Database --> ActionRepository : confirmation
+ActionRepository --> ActionService
+ActionService --> ActionController
+ActionController --> Utilisateur : Don confirmé
+
+@enduml

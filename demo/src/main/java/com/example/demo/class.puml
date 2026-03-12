@@ -1,0 +1,33 @@
+@startuml
+
+class User {
+ id
+ name
+ email
+ password
+}
+
+class Organisation {
+ id
+ name
+ address
+}
+
+class Action {
+ id
+ title
+ description
+ location
+ goalAmount
+}
+
+class Donation {
+ id
+ amount
+}
+
+Organisation "1" --> "0..*" Action : crée
+User "1" --> "0..*" Donation : fait
+Action "1" --> "0..*" Donation : reçoit
+
+@enduml
