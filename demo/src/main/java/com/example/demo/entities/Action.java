@@ -1,12 +1,10 @@
 package com.example.demo.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.*;
-
-import java.util.Date;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -21,6 +19,12 @@ public class Action {
     private String title;
     private String description;
     private String location;
-
     private Double goalAmount;
+
+    @ManyToOne
+    @JoinColumn(name = "organisation_id")
+    private Organisation organisation;
+
+    @OneToMany(mappedBy = "action", cascade = CascadeType.ALL)
+    private List<Donation> donations;
 }
