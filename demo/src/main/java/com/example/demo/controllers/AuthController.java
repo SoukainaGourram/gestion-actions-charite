@@ -1,15 +1,19 @@
 package com.example.demo.controllers;
 
-import com.example.demo.entities.User;
-import com.example.demo.repos.UserRepository;
-import com.example.demo.security.JwtUtil;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.entities.User;
+import com.example.demo.repos.UserRepository;
+import com.example.demo.security.JwtUtil;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,33 +29,30 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // INSCRIPTION
+    // ✅ INSCRIPTION
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
 
-        // Vérifier si l'email existe déjà
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email déjà utilisé !");
         }
 
-        // Encoder le mot de passe avant de sauvegarder
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole("USER");
 
-        // Sauvegarder l'utilisateur
-        User saved = userRepo.save(user);
+        userRepo.save(user);
 
         return ResponseEntity.ok("Inscription réussie !");
     }
 
-    // CONNEXION
+    // ✅ CONNEXION
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
 
         String email = credentials.get("email");
         String password = credentials.get("password");
 
-        // Chercher l'utilisateur par email
+        // 🔍 Check user
         Optional<User> userOpt = userRepo.findByEmail(email);
 
         if (userOpt.isEmpty()) {
@@ -60,19 +61,19 @@ public class AuthController {
 
         User user = userOpt.get();
 
-        // Vérifier le mot de passe
+        // 🔐 Check password
         if (!passwordEncoder.matches(password, user.getPassword())) {
             return ResponseEntity.badRequest().body("Mot de passe incorrect !");
         }
 
-        // Générer le token JWT
+        // 🎟 Generate JWT
         String token = jwtUtil.generateToken(email);
 
-        // Retourner le token
+        // 📦 Response
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
         response.put("email", email);
-        response.put("role", user.getRole().toString());
+        response.put("role", user.getRole());
 
         return ResponseEntity.ok(response);
     }

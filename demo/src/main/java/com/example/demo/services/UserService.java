@@ -1,9 +1,11 @@
 package com.example.demo.services;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.example.demo.entities.User;
 import com.example.demo.repos.UserRepository;
-import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class UserService {
@@ -21,6 +23,11 @@ public class UserService {
     public User findById(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé : " + id));
+    }
+
+    public User findByEmail(String email) {
+        return repo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé : " + email));
     }
 
     public User save(User user) {
