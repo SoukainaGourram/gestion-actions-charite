@@ -1,11 +1,14 @@
 package com.example.demo.entities;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.util.Objects;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
 @Entity
 public class Donation {
 
@@ -22,4 +25,59 @@ public class Donation {
     @ManyToOne
     @JoinColumn(name = "action_id")
     private Action action;
+
+    public Donation() {
+    }
+
+    public Donation(Long id, Double amount, User user, Action action) {
+        this.id = id;
+        this.amount = amount;
+        this.user = user;
+        this.action = action;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Action getAction() {
+        return action;
+    }
+
+    public void setAction(Action action) {
+        this.action = action;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Donation)) return false;
+        Donation donation = (Donation) o;
+        return Objects.equals(id, donation.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
