@@ -1,5 +1,6 @@
 package com.example.demo.entities;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,6 +24,9 @@ public class User {
     private String email;
     private String password;
     private String role;
+    private String phone;
+    private String profilePictureUrl;
+    private LocalDate registrationDate = LocalDate.now();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Donation> donations;
@@ -78,6 +82,26 @@ public class User {
     public void setRole(String role) {
         this.role = role;
     }
+     public String getPhone() { 
+        return phone; 
+    }
+    public void setPhone(String phone) { 
+        this.phone = phone; 
+    }
+ 
+    public String getProfilePictureUrl() {
+         return profilePictureUrl;
+         }
+    public void setProfilePictureUrl(String profilePictureUrl) { 
+        this.profilePictureUrl = profilePictureUrl; 
+    }
+ 
+    public LocalDate getRegistrationDate() { 
+        return registrationDate; 
+    }
+    public void setRegistrationDate(LocalDate registrationDate) { 
+        this.registrationDate = registrationDate;
+     }
 
     public List<Donation> getDonations() {
         return donations;

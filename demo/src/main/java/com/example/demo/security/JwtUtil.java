@@ -16,36 +16,39 @@ public class JwtUtil {
     // Durée de validité du token : 24 heures
     private final long EXPIRATION = 86400000;
 
-    // Créer un token pour un utilisateur connecté
-    public String generateToken(String email) {
+    
+    public String generateToken(String email,String role) {
         return Jwts.builder()
-                .setSubject(email)          // L'email de l'utilisateur
-                .setIssuedAt(new Date())    // Date de création
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION)) // Date d'expiration
-                .signWith(key)              // Signature avec la clé secrète
+                .setSubject(email)         
+                .setIssuedAt(new Date())  
+                .claim("role", role)  
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION)) 
+                .signWith(key)              
                 .compact();
     }
 
     // Extraire l'email depuis un token
     public String extractEmail(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return getClaims(token).getSubject();
     }
-
+    public String extractRole(String token) {
+        return getClaims(token).get("role", String.class);
+    }
     // Vérifier si le token est encore valide
     public boolean isTokenValid(String token) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token);
+            getClaims(token);
             return true;
         } catch (Exception e) {
             return false;
         }
+    }
+    // Méthode privée commune pour parser le token
+    private Claims getClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
