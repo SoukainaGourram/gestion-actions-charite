@@ -20,6 +20,10 @@ public class Organisation {
     private String name;
     private String address;
     private String fiscalNumber;
+    private String contact;          
+    private String logoUrl;          
+    private String description;     
+    private Boolean approved = false;
 
     @OneToMany(mappedBy = "organisation", cascade = CascadeType.ALL)
     private List<Action> actions;
@@ -66,6 +70,34 @@ public class Organisation {
     public void setFiscalNumber(String fiscalNumber) {
         this.fiscalNumber = fiscalNumber;
     }
+    public String getContact() {
+         return contact;
+         }
+    public void setContact(String contact) {
+         this.contact = contact;
+         }
+ 
+    public String getLogoUrl() {
+         return logoUrl; 
+        }
+    public void setLogoUrl(String logoUrl) { 
+        this.logoUrl = logoUrl;
+     }
+ 
+    public String getDescription() { 
+        return description;
+     }
+    public void setDescription(String description) {
+         this.description = description; 
+        }
+ 
+    public Boolean getApproved() {
+         return approved; 
+        }
+    public void setApproved(Boolean approved) { 
+        this.approved = approved;
+     }
+ 
 
     public List<Action> getActions() {
         return actions;

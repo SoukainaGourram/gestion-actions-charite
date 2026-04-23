@@ -1,5 +1,6 @@
 package com.example.demo.entities;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import jakarta.persistence.Entity;
@@ -15,8 +16,11 @@ public class Donation {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
     private Double amount;
+    private LocalDateTime donationDate = LocalDateTime.now();
+    private String paymentMethod = "STRIPE";
+    private String status = "COMPLETED";
+ 
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -51,6 +55,27 @@ public class Donation {
     public void setAmount(Double amount) {
         this.amount = amount;
     }
+    public LocalDateTime getDonationDate() {
+        return donationDate;
+ }
+    public void setDonationDate(LocalDateTime donationDate) { 
+        this.donationDate = donationDate; 
+    }
+ 
+    public String getPaymentMethod() { 
+        return paymentMethod; 
+    }
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+ 
+    public String getStatus() { 
+        return status; 
+    }
+    public void setStatus(String status) { 
+        this.status = status; 
+    }
+ 
 
     public User getUser() {
         return user;

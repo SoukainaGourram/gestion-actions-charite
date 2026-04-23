@@ -1,5 +1,6 @@
 package com.example.demo.entities;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,6 +24,12 @@ public class Action {
     private String description;
     private String location;
     private Double goalAmount;
+    private Double currentAmount = 0.0;
+    private String category;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private String imageUrl;
+    private String status = "ACTIVE";
 
     @ManyToOne
     @JoinColumn(name = "organisation_id")
@@ -83,6 +90,47 @@ public class Action {
     public void setGoalAmount(Double goalAmount) {
         this.goalAmount = goalAmount;
     }
+     public Double getCurrentAmount() { 
+        return currentAmount; 
+    }
+    public void setCurrentAmount(Double currentAmount) { 
+        this.currentAmount = currentAmount; 
+    }
+ 
+    public String getCategory() {
+         return category;
+         }
+    public void setCategory(String category) { 
+        this.category = category; 
+    }
+ 
+    public LocalDate getStartDate() {
+         return startDate;
+         }
+    public void setStartDate(LocalDate startDate) {
+         this.startDate = startDate; 
+        }
+ 
+    public LocalDate getEndDate() { 
+        return endDate;
+     }
+    public void setEndDate(LocalDate endDate) { 
+        this.endDate = endDate;
+     }
+ 
+    public String getImageUrl() { 
+        return imageUrl;
+     }
+    public void setImageUrl(String imageUrl) {
+         this.imageUrl = imageUrl;
+         }
+ 
+    public String getStatus() {
+         return status; 
+        }
+    public void setStatus(String status) { 
+        this.status = status;
+    }
 
     public Organisation getOrganisation() {
         return organisation;
@@ -98,6 +146,10 @@ public class Action {
 
     public void setDonations(List<Donation> donations) {
         this.donations = donations;
+    }
+    public Double getProgressPercentage() {
+        if (goalAmount == null || goalAmount == 0) return 0.0;
+        return Math.min((currentAmount / goalAmount) * 100, 100.0);
     }
 
     @Override

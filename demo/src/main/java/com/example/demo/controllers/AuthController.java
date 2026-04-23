@@ -29,7 +29,7 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // ✅ INSCRIPTION
+    //  INSCRIPTION
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
 
@@ -38,21 +38,23 @@ public class AuthController {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        if (user.getRole() == null || user.getRole().isBlank()) {
         user.setRole("USER");
+        }
 
         userRepo.save(user);
-
         return ResponseEntity.ok("Inscription réussie !");
     }
 
-    // ✅ CONNEXION
+    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
 
         String email = credentials.get("email");
         String password = credentials.get("password");
 
-        // 🔍 Check user
+        
         Optional<User> userOpt = userRepo.findByEmail(email);
 
         if (userOpt.isEmpty()) {
@@ -61,15 +63,13 @@ public class AuthController {
 
         User user = userOpt.get();
 
-        // 🔐 Check password
+        
         if (!passwordEncoder.matches(password, user.getPassword())) {
             return ResponseEntity.badRequest().body("Mot de passe incorrect !");
         }
 
-        // 🎟 Generate JWT
-        String token = jwtUtil.generateToken(email);
-
-        // 📦 Response
+        //  Generate JWT
+        String token = jwtUtil.generateToken(email,user.getRole());
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
         response.put("email", email);

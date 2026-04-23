@@ -2,6 +2,7 @@ package com.example.demo.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,35 +24,44 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Désactiver CSRF (pas nécessaire avec JWT)
+           
             .csrf(csrf -> csrf.disable())
-
-            // Définir qui peut accéder à quoi
             .authorizeHttpRequests(auth -> auth
-                // Ces URLs sont accessibles sans connexion
-                .requestMatchers(
-                    "/api/auth/**",   // Login et inscription
-                    "/h2-console/**"  // Base de données H2
-                ).permitAll()
-                // Tout le reste nécessite une connexion
+                
+                .requestMatchers("/api/auth/**","/h2-console/**"  ).permitAll()
+                 // ✅ Lecture des actions et organisations → tout le monde (connecté)
+                .requestMatchers(HttpMethod.GET, "/api/actions/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/organisations/**").authenticated()
+ 
+                // ✅ Créer/modifier/supprimer une action → ORG_ADMIN ou SUPER_ADMIN
+                .requestMatchers(HttpMethod.POST, "/api/actions/**").hasAnyRole("ORG_ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/actions/**").hasAnyRole("ORG_ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/actions/**").hasAnyRole("ORG_ADMIN", "SUPER_ADMIN")
+ 
+                // ✅ Approuver une organisation → SUPER_ADMIN uniquement
+                .requestMatchers("/api/organisations/*/approve").hasRole("SUPER_ADMIN")
+ 
+                // ✅ Créer une organisation → tout utilisateur connecté
+                .requestMatchers(HttpMethod.POST, "/api/organisations/**").authenticated()
+ 
+                // ✅ Gérer les utilisateurs → SUPER_ADMIN uniquement
+                .requestMatchers("/api/user/**").authenticated()
+ 
+                // ✅ Faire un don → USER
+                .requestMatchers(HttpMethod.POST, "/api/donations/**").hasRole("USER")
+ 
+                // Tout le reste → connecté
                 .anyRequest().authenticated()
             )
-
-            // Ne pas utiliser les sessions (on utilise JWT)
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-
-            // Autoriser H2 console dans un iframe
             .headers(headers -> headers.frameOptions().disable())
-
-            // Ajouter notre filtre JWT avant le filtre de Spring
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
+ 
         return http.build();
     }
-
-    // Encodeur de mot de passe (BCrypt hash)
+ 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
