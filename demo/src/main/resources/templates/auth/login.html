@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion — CharityApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #1a6b3a 0%, #2d9e5f 100%); min-height: 100vh; }
+        .card { border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+        .btn-primary { background-color: #1a6b3a; border-color: #1a6b3a; }
+        .btn-primary:hover { background-color: #145530; }
+        .brand-logo { font-size: 2rem; font-weight: 700; color: #1a6b3a; }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center">
+    <div class="container" style="max-width: 420px;">
+        <div class="card p-4 mt-5">
+            <div class="text-center mb-4">
+                <div class="brand-logo">🌿 CharityApp</div>
+                <p class="text-muted">Connectez-vous à votre compte</p>
+            </div>
+            <div th:if="${param.logout}" class="alert alert-success">Déconnexion réussie !</div>
+            <div th:if="${param.error}" class="alert alert-danger">Email ou mot de passe incorrect.</div>
+            <form th:action="@{/login}" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input type="email" name="username" class="form-control" placeholder="votre@email.com" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Mot de passe</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Se connecter</button>
+            </form>
+            <hr>
+            <p class="text-center mb-0">
+                Pas encore de compte ?
+                <a th:href="@{/register}" class="text-success fw-bold">S'inscrire</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
