@@ -1,13 +1,12 @@
 package com.example.demo.services;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.example.demo.entities.Action;
 import com.example.demo.entities.Donation;
 import com.example.demo.repos.ActionRepository;
 import com.example.demo.repos.DonationRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class DonationService {
@@ -33,29 +32,23 @@ public class DonationService {
         return repo.findByUserId(userId);
     }
 
-    
     public Donation save(Donation donation) {
-    Donation saved = repo.save(donation);
+        Donation saved = repo.save(donation);
 
-    if (saved.getAction() != null && saved.getAction().getId() != null) {
-
-        Action action = actionRepo
-                .findById(saved.getAction().getId().longValue())
-                .orElse(null);
-
-        if (action != null) {
-            Double total = repo.findByActionId(action.getId().longValue())
-                    .stream()
-                    .mapToDouble(Donation::getAmount)
-                    .sum();
-
-            action.setCurrentAmount(total);
-            actionRepo.save(action);
+        if (saved.getAction() != null && saved.getAction().getId() != null) {
+            Action action = actionRepo.findById(saved.getAction().getId()).orElse(null);
+            if (action != null) {
+                Double total = repo.findByActionId(action.getId())
+                        .stream()
+                        .mapToDouble(Donation::getAmount)
+                        .sum();
+                action.setCurrentAmount(total);
+                actionRepo.save(action);
+            }
         }
-    }
 
-    return saved;
-}
+        return saved;
+    }
 
     public void delete(Long id) {
         repo.deleteById(id);
