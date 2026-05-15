@@ -41,7 +41,7 @@ public class Action {
     public Action() {
     }
 
-    public Action(Integer id, String title, String description, String location, Double goalAmount, Organisation organisation, List<Donation> donations) {
+    public Action(Long id, String title, String description, String location, Double goalAmount, Organisation organisation, List<Donation> donations) {
         this.id = id;
         this.title = title;
         this.description = description;
