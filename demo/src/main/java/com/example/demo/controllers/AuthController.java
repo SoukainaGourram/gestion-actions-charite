@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,19 +16,24 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.entities.User;
 import com.example.demo.repos.UserRepository;
 import com.example.demo.security.JwtUtil;
+import com.example.demo.services.EmailService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     private final UserRepository userRepo;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    public AuthController(UserRepository userRepo, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
+    public AuthController(UserRepository userRepo, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.userRepo = userRepo;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     //  INSCRIPTION
@@ -44,6 +51,11 @@ public class AuthController {
         }
 
         userRepo.save(user);
+        try {
+            emailService.sendWelcomeEmail(user);
+        } catch (Exception ex) {
+            logger.warn("Impossible d'envoyer l'email de bienvenue à {} : {}", user.getEmail(), ex.getMessage());
+        }
         return ResponseEntity.ok("Inscription réussie !");
     }
 

@@ -45,6 +45,9 @@
                               th:text="${action.status}"></span>
                     </div>
                     <h3 class="fw-bold" th:text="${action.title}"></h3>
+                    <div th:if="${action.imageUrl != null}" class="mb-4">
+                        <img th:src="${action.imageUrl}" alt="Action image" class="img-fluid rounded-3" style="max-height: 420px; width:100%; object-fit:cover;" />
+                    </div>
                     <p class="text-muted" th:text="${action.description}"></p>
                     <div class="row g-3 mt-2">
                         <div class="col-sm-6">
@@ -58,6 +61,30 @@
                         <div class="col-sm-6" th:if="${action.organisation != null}">
                             <i class="bi bi-building-fill text-success"></i>
                             <span th:text="${action.organisation.name}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-4" th:if="${action.media != null and !#lists.isEmpty(action.media)}">
+                    <div class="col-12">
+                        <h5 class="fw-semibold">Galerie média</h5>
+                    </div>
+                    <div class="col-12 col-md-6" th:each="media : ${action.media}">
+                        <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-3">
+                            <div class="ratio ratio-16x9" th:if="${#strings.startsWith(media.contentType, 'image/')}">
+                                <img th:src="${media.url}" class="w-100 h-100" style="object-fit:cover;" alt="Media image" />
+                            </div>
+                            <div class="ratio ratio-16x9" th:if="${#strings.startsWith(media.contentType, 'video/')}">
+                                <video controls class="w-100 h-100" th:src="${media.url}"></video>
+                            </div>
+                            <div class="card-body py-3 px-3 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small" th:text="${media.fileName}"></span>
+                                <button type="button" class="btn btn-link btn-sm text-danger p-0"
+                                        sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')"
+                                        th:onclick="|deleteMedia(${media.id})|">
+                                    Supprimer
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -88,6 +115,18 @@
                     </button>
                 </div>
 
+                <div class="card border-0 shadow-sm rounded-3 p-4 mt-3" sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')">
+                    <h6 class="fw-bold mb-3">📤 Importer un média</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Image ou vidéo</label>
+                        <input type="file" id="mediaFile" class="form-control" accept="image/*,video/*">
+                    </div>
+                    <button class="btn btn-outline-primary w-100" onclick="uploadMedia()">
+                        <i class="bi bi-cloud-upload me-2"></i>Importer
+                    </button>
+                    <div id="mediaFeedback" class="mt-3 text-sm text-muted"></div>
+                </div>
+
                 <div class="mt-3" sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')">
                     <a th:href="@{/actions/edit/{id}(id=${action.id})}" class="btn btn-outline-warning w-100 mb-2">
                         <i class="bi bi-pencil me-2"></i>Modifier
@@ -104,17 +143,97 @@ async function makeDonation() {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     const actionId = /*[[${action.id}]]*/ 0;
-    const res = await fetch('/api/donations', {
+    const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({
             amount: parseFloat(amount),
-            user: { id: userId },
-            action: { id: actionId }
+            userId: userId,
+            actionId: actionId
         })
     });
-    if (res.ok) { alert('Don effectue ! Merci'); location.reload(); }
-    else { alert('Erreur lors du don'); }
+    if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+            window.location.href = data.url;
+            return;
+        }
+    }
+    alert('Erreur lors de la création du paiement Stripe');
+}
+</script>
+<script th:inline="javascript">
+async function makeDonation() {
+    const amount = document.getElementById('donationAmount').value;
+    if (!amount || amount <= 0) { alert('Entrez un montant valide'); return; }
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    const actionId = /*[[${action.id}]]*/ 0;
+    const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({
+            amount: parseFloat(amount),
+            userId: userId,
+            actionId: actionId
+        })
+    });
+    if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+            window.location.href = data.url;
+            return;
+        }
+    }
+    alert('Erreur lors de la création du paiement Stripe');
+}
+
+async function uploadMedia() {
+    const fileInput = document.getElementById('mediaFile');
+    const feedback = document.getElementById('mediaFeedback');
+    if (!fileInput.files.length) {
+        feedback.textContent = 'Choisissez un fichier avant d’importer.';
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const actionId = /*[[${action.id}]]*/ 0;
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch('/api/actions/' + actionId + '/media', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: formData
+    });
+
+    if (res.ok) {
+        feedback.textContent = 'Média importé avec succès.';
+        window.location.reload();
+        return;
+    }
+
+    feedback.textContent = 'Erreur lors de l’import du média.';
+}
+
+async function deleteMedia(mediaId) {
+    const token = localStorage.getItem('token');
+    if (!confirm('Supprimer ce média ?')) {
+        return;
+    }
+
+    const res = await fetch('/api/media/' + mediaId, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    if (res.ok) {
+        window.location.reload();
+        return;
+    }
+
+    alert('Impossible de supprimer le média.');
 }
 </script>
 </body>

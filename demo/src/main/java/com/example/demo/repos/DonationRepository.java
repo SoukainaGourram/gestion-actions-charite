@@ -9,4 +9,5 @@ import com.example.demo.entities.Donation;
 public interface DonationRepository extends JpaRepository<Donation, Long> {
     List<Donation> findByUserId(Long userId);
     List<Donation> findByActionId(Long actionId);
+    List<Donation> findByActionIdAndStatus(Long actionId, String status);
 }

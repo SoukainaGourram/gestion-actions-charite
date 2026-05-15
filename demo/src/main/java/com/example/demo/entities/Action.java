@@ -1,11 +1,13 @@
 package com.example.demo.entities;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,6 +39,9 @@ public class Action {
 
     @OneToMany(mappedBy = "action", cascade = CascadeType.ALL)
     private List<Donation> donations;
+
+    @OneToMany(mappedBy = "action", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Media> media = new ArrayList<>();
 
     public Action() {
     }
@@ -147,6 +152,15 @@ public class Action {
     public void setDonations(List<Donation> donations) {
         this.donations = donations;
     }
+
+    public List<Media> getMedia() {
+        return media;
+    }
+
+    public void setMedia(List<Media> media) {
+        this.media = media;
+    }
+
     public Double getProgressPercentage() {
         if (goalAmount == null || goalAmount == 0) return 0.0;
         return Math.min((currentAmount / goalAmount) * 100, 100.0);
