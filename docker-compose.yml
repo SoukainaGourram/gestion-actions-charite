@@ -1,10 +1,8 @@
-version: '3.9'
-
 services:
   backend:
     build:
-      context: ./demo
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     ports:
       - "5000:5000"
     depends_on:
@@ -21,15 +19,7 @@ services:
       STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
     volumes:
-      - ./demo/uploads:/app/uploads
-
-  frontend:
-    build:
-      context: ./frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
+      - ./backend/uploads:/app/uploads
 
   db:
     image: postgres:16

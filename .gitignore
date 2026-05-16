@@ -1,0 +1,23 @@
+# Maven
+target/
+**/target/
+
+# Spring Boot
+*.jar
+*.war
+
+# IDEs
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+
+# temporary
+*.tmp
+*.swp
+*.swo

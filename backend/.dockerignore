@@ -1,0 +1,12 @@
+target/
+uploads/
+*.log
+*.tmp
+*.swp
+*.swo
+.idea/
+.vscode/
+.git/
+.gitignore
+Dockerfile
+docker-compose.yml

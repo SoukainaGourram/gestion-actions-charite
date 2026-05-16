@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+
+actor Utilisateur
+actor Organisation
+actor Administrateur
+
+Utilisateur --> (Consulter les actions)
+Utilisateur --> (Faire un don)
+
+Organisation --> (Créer une action)
+Organisation --> (Modifier une action)
+Organisation --> (Supprimer une action)
+
+Administrateur --> (Gérer utilisateurs)
+Administrateur --> (Valider actions)
+
+@enduml

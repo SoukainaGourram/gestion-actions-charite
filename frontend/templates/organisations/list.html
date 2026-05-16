@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Organisations — HopeConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --green-deep:#0d3d26;--green-mid:#1a6b3a;--green-light:#2d9e5f;--green-pale:#e8f5ee;--gold:#c9a84c;--white:#ffffff;--gray-bg:#f4f6f4;--gray-text:#6b7c6e;--sidebar-w:260px; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--gray-bg);display:flex;min-height:100vh}
+        .sidebar{width:var(--sidebar-w);background:var(--green-deep);min-height:100vh;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100}
+        .sidebar-brand{padding:28px 24px 24px;border-bottom:1px solid rgba(255,255,255,0.07)}
+        .brand-row{display:flex;align-items:center;gap:12px}
+        .brand-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--green-light),var(--gold));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+        .brand-name{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--white)}
+        .sidebar-nav{padding:20px 12px;flex:1}
+        .nav-section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);padding:0 12px;margin:16px 0 8px}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:rgba(255,255,255,.65);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s;margin-bottom:2px}
+        .nav-link:hover{background:rgba(255,255,255,.08);color:var(--white)}
+        .nav-link.active{background:rgba(45,158,95,.25);color:var(--white)}
+        .sidebar-footer{padding:16px 12px;border-top:1px solid rgba(255,255,255,.07)}
+        .logout-btn{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;color:rgba(255,255,255,.45);text-decoration:none;font-size:.875rem;transition:all .2s}
+        .logout-btn:hover{background:rgba(255,80,80,.1);color:#ff8080}
+        .main{margin-left:var(--sidebar-w);flex:1}
+        .topbar{background:var(--white);padding:18px 36px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e8ede9;position:sticky;top:0;z-index:50}
+        .topbar-title{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--green-deep)}
+        .btn-primary{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:linear-gradient(135deg,var(--green-mid),var(--green-light));color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s}
+        .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(26,107,58,.3);color:white}
+        .content{padding:32px 36px}
+        .orgs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+        .org-card{background:var(--white);border-radius:16px;padding:24px;box-shadow:0 1px 8px rgba(13,61,38,.06);transition:all .25s}
+        .org-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(13,61,38,.12)}
+        .org-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+        .org-avatar{width:48px;height:48px;background:linear-gradient(135deg,var(--green-pale),#c8e6d5);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+        .approved-badge{font-size:.7rem;font-weight:700;padding:4px 10px;border-radius:20px}
+        .approved-badge.yes{background:#dcfce7;color:#16a34a}
+        .approved-badge.no{background:#fef9ec;color:#b45309}
+        .org-name{font-weight:700;font-size:1rem;color:var(--green-deep);margin-bottom:6px}
+        .org-desc{font-size:.82rem;color:var(--gray-text);line-height:1.5;margin-bottom:14px}
+        .org-info{display:flex;flex-direction:column;gap:5px;margin-bottom:18px}
+        .org-info-item{font-size:.78rem;color:var(--gray-text);display:flex;align-items:center;gap:6px}
+        .org-actions{display:flex;gap:8px}
+        .btn-see{flex:1;text-align:center;font-size:.8rem;color:var(--green-mid);text-decoration:none;font-weight:600;padding:8px;border:1.5px solid var(--green-light);border-radius:8px;transition:all .2s}
+        .btn-see:hover{background:var(--green-pale);color:var(--green-deep)}
+        .btn-approve{font-size:.8rem;color:white;background:var(--green-mid);border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;transition:all .2s;font-family:'DM Sans',sans-serif}
+        .btn-approve:hover{background:var(--green-deep)}
+        .empty-state{text-align:center;padding:80px 20px;color:var(--gray-text);background:var(--white);border-radius:16px}
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-row">
+            <div class="brand-icon">🌿</div>
+            <span class="brand-name">HopeConnect</span>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Navigation</div>
+        <a th:href="@{/dashboard}" class="nav-link"><span>⊞</span> Dashboard</a>
+        <a th:href="@{/actions}" class="nav-link"><span>♡</span> Actions</a>
+        <a th:href="@{/organisations}" class="nav-link active"><span>⌂</span> Organisations</a>
+        <a th:href="@{/profile}" class="nav-link"><span>◎</span> Mon Profil</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a th:href="@{/logout}" class="logout-btn"><span>⎋</span> Déconnexion</a>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-title">Organisations</div>
+        <a th:href="@{/organisations/new}" class="btn-primary">+ Nouvelle organisation</a>
+    </header>
+    <div class="content">
+        <div class="orgs-grid" th:unless="${#lists.isEmpty(organisations)}">
+            <div class="org-card" th:each="org : ${organisations}">
+                <div class="org-header">
+                    <div class="org-avatar">🏢</div>
+                    <span class="approved-badge"
+                          th:classappend="${org.approved} ? ' yes' : ' no'"
+                          th:text="${org.approved} ? '✓ Approuvée' : '⏳ En attente'"></span>
+                </div>
+                <div class="org-name" th:text="${org.name}"></div>
+                <div class="org-desc"
+                     th:text="${org.description != null ? #strings.abbreviate(org.description,80) : 'Aucune description'}"></div>
+                <div class="org-info">
+                    <div class="org-info-item" th:if="${org.address != null}">
+                        📍 <span th:text="${org.address}"></span>
+                    </div>
+                    <div class="org-info-item" th:if="${org.contact != null}">
+                        📞 <span th:text="${org.contact}"></span>
+                    </div>
+                </div>
+                <div class="org-actions">
+                    <a th:href="@{/organisations/{id}(id=${org.id})}" class="btn-see">Voir les actions →</a>
+                    <button th:if="${!org.approved}"
+                            sec:authorize="hasRole('SUPER_ADMIN')"
+                            class="btn-approve"
+                            th:onclick="'approuver(' + ${org.id} + ')'">Approuver</button>
+                </div>
+            </div>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(organisations)}">
+            <div style="font-size:3rem;margin-bottom:12px">🏛️</div>
+            <p>Aucune organisation enregistrée</p>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+async function approuver(id) {
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/organisations/' + id + '/approve', {
+        method: 'PATCH',
+        headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) { alert('Organisation approuvée !'); location.reload(); }
+    else { alert('Erreur lors de l\'approbation'); }
+}
+</script>
+</body>
+</html>
