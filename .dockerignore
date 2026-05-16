@@ -1,0 +1,16 @@
+# Ignore build output and temporary files from the Docker build context
+.git
+.github
+.idea
+.vscode
+target
+**/target
+*.log
+*.tmp
+*.swp
+*.swo
+**/.DS_Store
+**/node_modules
+**/.cache
+demo
+gestion-actions-charite

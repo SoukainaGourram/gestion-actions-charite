@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Profil — HopeConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--green-deep:#0d3d26;--green-mid:#1a6b3a;--green-light:#2d9e5f;--green-pale:#e8f5ee;--gold:#c9a84c;--white:#ffffff;--gray-bg:#f4f6f4;--gray-text:#6b7c6e;--sidebar-w:260px}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--gray-bg);display:flex;min-height:100vh}
+        .sidebar{width:var(--sidebar-w);background:var(--green-deep);min-height:100vh;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100}
+        .sidebar-brand{padding:28px 24px 24px;border-bottom:1px solid rgba(255,255,255,.07)}
+        .brand-row{display:flex;align-items:center;gap:12px}
+        .brand-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--green-light),var(--gold));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+        .brand-name{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--white)}
+        .sidebar-nav{padding:20px 12px;flex:1}
+        .nav-section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);padding:0 12px;margin:16px 0 8px}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:rgba(255,255,255,.65);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s;margin-bottom:2px}
+        .nav-link:hover{background:rgba(255,255,255,.08);color:var(--white)}
+        .nav-link.active{background:rgba(45,158,95,.25);color:var(--white)}
+        .sidebar-footer{padding:16px 12px;border-top:1px solid rgba(255,255,255,.07)}
+        .logout-btn{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;color:rgba(255,255,255,.45);text-decoration:none;font-size:.875rem;transition:all .2s}
+        .logout-btn:hover{background:rgba(255,80,80,.1);color:#ff8080}
+        .main{margin-left:var(--sidebar-w);flex:1}
+        .topbar{background:var(--white);padding:18px 36px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e8ede9;position:sticky;top:0;z-index:50}
+        .topbar-title{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--green-deep)}
+        .content{padding:32px 36px}
+        .profile-grid{display:grid;grid-template-columns:300px 1fr;gap:24px}
+        .profile-card{background:var(--white);border-radius:16px;padding:32px;box-shadow:0 1px 8px rgba(13,61,38,.06);text-align:center;height:fit-content}
+        .avatar-circle{width:88px;height:88px;background:linear-gradient(135deg,var(--green-mid),var(--green-light));border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:2rem;color:white;margin:0 auto 20px}
+        .profile-name{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--green-deep);margin-bottom:4px}
+        .profile-email{font-size:.85rem;color:var(--gray-text);margin-bottom:14px}
+        .role-chip{display:inline-block;font-size:.75rem;font-weight:700;padding:5px 14px;border-radius:20px;background:var(--green-pale);color:var(--green-mid);text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px}
+        .profile-meta{font-size:.8rem;color:var(--gray-text);padding-top:16px;border-top:1px solid #f0f0f0}
+        .right-col{display:flex;flex-direction:column;gap:20px}
+        .panel{background:var(--white);border-radius:16px;padding:28px;box-shadow:0 1px 8px rgba(13,61,38,.06)}
+        .panel-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--green-deep);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #f0f0f0}
+        .form-group{margin-bottom:16px}
+        .form-label{display:block;font-size:.82rem;font-weight:600;color:var(--green-deep);margin-bottom:7px}
+        .form-input{width:100%;padding:11px 14px;border:1.5px solid #e2e8e4;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--green-deep);background:var(--gray-bg);transition:all .2s;outline:none}
+        .form-input:focus{border-color:var(--green-light);background:var(--white);box-shadow:0 0 0 3px rgba(45,158,95,.1)}
+        .btn-save{padding:11px 24px;background:linear-gradient(135deg,var(--green-mid),var(--green-light));color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+        .btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(26,107,58,.3)}
+        table{width:100%;border-collapse:collapse}
+        th{font-size:.78rem;font-weight:600;color:var(--gray-text);text-align:left;padding:10px 14px;background:#f9fafb;border-bottom:1px solid #f0f0f0}
+        td{font-size:.85rem;color:var(--green-deep);padding:12px 14px;border-bottom:1px solid #f9faf9}
+        tr:last-child td{border-bottom:none}
+        .badge-done{font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:12px;background:#dcfce7;color:#16a34a}
+        .empty-donations{text-align:center;padding:30px;color:var(--gray-text);font-size:.9rem}
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-row">
+            <div class="brand-icon">🌿</div>
+            <span class="brand-name">HopeConnect</span>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Navigation</div>
+        <a th:href="@{/dashboard}" class="nav-link"><span>⊞</span> Dashboard</a>
+        <a th:href="@{/actions}" class="nav-link"><span>♡</span> Actions</a>
+        <a th:href="@{/organisations}" class="nav-link"><span>⌂</span> Organisations</a>
+        <a th:href="@{/profile}" class="nav-link active"><span>◎</span> Mon Profil</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a th:href="@{/logout}" class="logout-btn"><span>⎋</span> Déconnexion</a>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-title">Mon Profil</div>
+    </header>
+    <div class="content">
+        <div class="profile-grid">
+            <!-- Carte profil -->
+            <div class="profile-card">
+                <div class="avatar-circle" th:text="${#strings.substring(user.name,0,1)}">U</div>
+                <div class="profile-name" th:text="${user.name}"></div>
+                <div class="profile-email" th:text="${user.email}"></div>
+                <div class="role-chip" th:text="${user.role}"></div>
+                <div class="profile-meta">
+                    📅 Inscrit le <span th:text="${user.registrationDate}"></span>
+                </div>
+            </div>
+
+            <div class="right-col">
+                <!-- Modifier profil -->
+                <div class="panel">
+                    <div class="panel-title">Modifier mes informations</div>
+                    <div class="form-group">
+                        <label class="form-label">Nom complet</label>
+                        <input type="text" id="name" class="form-input" th:value="${user.name}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Téléphone</label>
+                        <input type="text" id="phone" class="form-input" th:value="${user.phone}">
+                    </div>
+                    <button class="btn-save" onclick="updateProfile()">Enregistrer les modifications</button>
+                </div>
+
+                <!-- Historique dons -->
+                <div class="panel">
+                    <div class="panel-title">Historique de mes dons</div>
+                    <table th:unless="${#lists.isEmpty(donations)}">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Montant</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="don : ${donations}">
+                                <td th:text="${don.action != null ? don.action.title : 'N/A'}"></td>
+                                <td style="font-weight:600;color:var(--green-mid)"
+                                    th:text="${don.amount} + ' MAD'"></td>
+                                <td th:text="${don.donationDate}"></td>
+                                <td><span class="badge-done" th:text="${don.status}"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="empty-donations" th:if="${#lists.isEmpty(donations)}">
+                        🌱 Aucun don effectué pour le moment
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function updateProfile() {
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({
+            name: document.getElementById('name').value,
+            phone: document.getElementById('phone').value
+        })
+    });
+    if (res.ok) { alert('Profil mis à jour !'); location.reload(); }
+    else { alert('Erreur lors de la mise à jour'); }
+}
+</script>
+</body>
+</html>

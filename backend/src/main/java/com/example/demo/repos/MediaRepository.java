@@ -1,0 +1,11 @@
+package com.example.demo.repos;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.demo.entities.Media;
+
+public interface MediaRepository extends JpaRepository<Media, Long> {
+    List<Media> findByActionId(Long actionId);
+}

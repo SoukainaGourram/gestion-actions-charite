@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Actions — HopeConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green-deep: #0d3d26; --green-mid: #1a6b3a; --green-light: #2d9e5f;
+            --green-pale: #e8f5ee; --gold: #c9a84c; --white: #ffffff;
+            --gray-bg: #f4f6f4; --gray-text: #6b7c6e; --sidebar-w: 260px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-w); background: var(--green-deep); min-height: 100vh; display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 24px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+        .brand-row { display: flex; align-items: center; gap: 12px; }
+        .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--green-light), var(--gold)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .brand-name { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--white); }
+        .sidebar-nav { padding: 20px 12px; flex: 1; }
+        .nav-section-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.3); padding: 0 12px; margin: 16px 0 8px; }
+        .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 10px; color: rgba(255,255,255,0.65); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; margin-bottom: 2px; }
+        .nav-link:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+        .nav-link.active { background: rgba(45,158,95,0.25); color: var(--white); }
+        .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.07); }
+        .logout-btn { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px; color: rgba(255,255,255,0.45); text-decoration: none; font-size: 0.875rem; transition: all 0.2s; }
+        .logout-btn:hover { background: rgba(255,80,80,0.1); color: #ff8080; }
+        .main { margin-left: var(--sidebar-w); flex: 1; }
+        .topbar { background: var(--white); padding: 18px 36px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e8ede9; position: sticky; top: 0; z-index: 50; }
+        .topbar-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--green-deep); }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: linear-gradient(135deg, var(--green-mid), var(--green-light)); color: white; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,107,58,0.3); color: white; }
+        .content { padding: 32px 36px; }
+        .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+        .filter-btn { padding: 8px 18px; border-radius: 30px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; text-decoration: none; border: 1.5px solid #e2e8e4; color: var(--gray-text); background: var(--white); transition: all 0.2s; cursor: pointer; }
+        .filter-btn:hover { border-color: var(--green-light); color: var(--green-mid); }
+        .filter-btn.active { background: var(--green-mid); border-color: var(--green-mid); color: white; }
+        .actions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .action-card { background: var(--white); border-radius: 16px; padding: 24px; box-shadow: 0 1px 8px rgba(13,61,38,0.06); transition: all 0.25s; }
+        .action-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(13,61,38,0.12); }
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+        .category-badge { font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--green-pale); color: var(--green-mid); text-transform: capitalize; }
+        .status-badge { font-size: 0.7rem; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+        .status-badge.active { background: #dcfce7; color: #16a34a; }
+        .status-badge.archived { background: #f3f4f6; color: #6b7280; }
+        .card-title { font-weight: 600; color: var(--green-deep); font-size: 0.95rem; margin-bottom: 8px; line-height: 1.3; }
+        .card-desc { font-size: 0.82rem; color: var(--gray-text); line-height: 1.5; margin-bottom: 16px; }
+        .amounts { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px; }
+        .amount-collected { color: var(--green-mid); font-weight: 600; }
+        .amount-goal { color: var(--gray-text); }
+        .progress-bar { height: 6px; background: #e8ede9; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green-mid), var(--green-light)); border-radius: 10px; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; }
+        .card-location { font-size: 0.78rem; color: var(--gray-text); }
+        .btn-see { font-size: 0.8rem; color: var(--green-mid); text-decoration: none; font-weight: 600; padding: 7px 16px; border: 1.5px solid var(--green-light); border-radius: 8px; transition: all 0.2s; }
+        .btn-see:hover { background: var(--green-pale); color: var(--green-deep); }
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--gray-text); background: var(--white); border-radius: 16px; }
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-row">
+            <div class="brand-icon">🌿</div>
+            <span class="brand-name">HopeConnect</span>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Navigation</div>
+        <a th:href="@{/dashboard}" class="nav-link"><span>⊞</span> Dashboard</a>
+        <a th:href="@{/actions}" class="nav-link active"><span>♡</span> Actions</a>
+        <a th:href="@{/organisations}" class="nav-link"><span>⌂</span> Organisations</a>
+        <a th:href="@{/profile}" class="nav-link"><span>◎</span> Mon Profil</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a th:href="@{/logout}" class="logout-btn"><span>⎋</span> Déconnexion</a>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-title">Actions caritatives</div>
+        <div sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')">
+            <a th:href="@{/actions/new}" class="btn-primary">+ Nouvelle action</a>
+        </div>
+    </header>
+    <div class="content">
+        <div class="filters">
+            <a th:href="@{/actions}" class="filter-btn"
+               th:classappend="${selectedCategory == null} ? ' active' : ''">Toutes</a>
+            <a th:href="@{/actions(category='education')}" class="filter-btn"
+               th:classappend="${selectedCategory == 'education'} ? ' active' : ''">📚 Éducation</a>
+            <a th:href="@{/actions(category='sante')}" class="filter-btn"
+               th:classappend="${selectedCategory == 'sante'} ? ' active' : ''">🏥 Santé</a>
+            <a th:href="@{/actions(category='environnement')}" class="filter-btn"
+               th:classappend="${selectedCategory == 'environnement'} ? ' active' : ''">🌿 Environnement</a>
+            <a th:href="@{/actions(category='alimentaire')}" class="filter-btn"
+               th:classappend="${selectedCategory == 'alimentaire'} ? ' active' : ''">🍞 Alimentaire</a>
+            <a th:href="@{/actions(category='autre')}" class="filter-btn"
+               th:classappend="${selectedCategory == 'autre'} ? ' active' : ''">📦 Autre</a>
+        </div>
+
+        <div class="actions-grid" th:unless="${#lists.isEmpty(actions)}">
+            <div class="action-card" th:each="action : ${actions}">
+                <div class="card-top">
+                    <span class="category-badge" th:text="${action.category != null ? action.category : 'Général'}"></span>
+                    <span class="status-badge"
+                          th:classappend="${action.status == 'ACTIVE'} ? ' active' : ' archived'"
+                          th:text="${action.status}"></span>
+                </div>
+                <div class="card-title" th:text="${action.title}"></div>
+                <div class="card-desc" th:text="${#strings.abbreviate(action.description, 80)}"></div>
+                <div class="amounts">
+                    <span class="amount-collected" th:text="${action.currentAmount} + ' MAD collectés'"></span>
+                    <span class="amount-goal" th:text="'/ ' + ${action.goalAmount} + ' MAD'"></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" th:style="'width:' + ${action.progressPercentage} + '%'"></div>
+                </div>
+                <div class="card-footer">
+                    <span class="card-location">📍 <span th:text="${action.location}"></span></span>
+                    <a th:href="@{/actions/{id}(id=${action.id})}" class="btn-see">Voir →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(actions)}">
+            <div style="font-size:3rem;margin-bottom:12px;">🌱</div>
+            <p>Aucune action trouvée pour cette catégorie</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
