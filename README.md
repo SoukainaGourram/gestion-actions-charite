@@ -1,138 +1,124 @@
-# 📌 Application de Gestion des Actions de Charité
+# 📌 Gestion des Actions de Charité
 
-Application web développée avec **Spring Boot** permettant la gestion et le suivi des actions de charité.  
-La plateforme connecte les organisations caritatives et les donateurs afin de faciliter les collectes de fonds, la participation aux événements solidaires et la gestion des campagnes humanitaires.
+Application web (backend Java / frontend Thymeleaf) pour la gestion d'actions caritatives, la collecte de dons et la coordination entre organisations et donateurs.
 
----
-
-# ✨ Fonctionnalités principales
-
-## 👤 Gestion des utilisateurs
-
-- Inscription / Connexion
-- Authentification sécurisée avec Spring Security
-- Gestion du profil utilisateur
-- Historique des dons
-- Gestion des rôles :
-  - USER
-  - ORGANIZATION
-  - ADMIN
+**Objectif** : fournir une plateforme simple, sécurisée et extensible pour créer/consulter des actions, recevoir des dons (Stripe) et administrer les campagnes.
 
 ---
 
-## 🏢 Gestion des organisations
-
-- Création de profils organisations
-- Validation par administrateur
-- Gestion des informations :
-  - logo
-  - description
-  - coordonnées
-- Création et gestion des actions de charité
-
----
-
-## ❤️ Gestion des actions de charité
-
-- Création d’actions
-- Modification et archivage
-- Upload d’images et médias
-- Gestion :
-  - titre
-  - description
-  - lieu
-  - date
-  - objectif de collecte
-  - montant collecté
-
----
-
-## 🔍 Exploration des initiatives
-
-- Recherche par catégories :
-  - Éducation
-  - Santé
-  - Environnement
-  - Aide sociale
-- Filtrage et recommandations
-
----
-
-## 💳 Dons et participation
-
-- Participation aux actions
-- Paiement sécurisé via Stripe / PayPal
-- Suivi des contributions
-- Progression des collectes en temps réel
-
----
-
-## 🌍 Fonctionnalités supplémentaires
-
-- Multilingue : Français / Arabe
-- Notifications par email
+**Principales fonctionnalités**
+- Gestion des utilisateurs (inscription, authentification, profils, rôles)
+- Gestion des organisations et des actions (création, modification, images)
+- Paiements sécurisés (Stripe)
 - Tableau de bord administrateur
-- Responsive Design
+- Notifications email
+- Multilingue (Français / Arabe)
 
 ---
 
-# 🛠️ Technologies utilisées
+**Architecture & structure**
 
-## Backend
+- Backend : Spring Boot (Maven)
+- Frontend : Thymeleaf templates (servis par le backend)
+- DB production : PostgreSQL (H2 pour tests)
+- Conteneurisation : Docker + docker-compose
 
-- Java 17
-- Spring Boot 3
-- Spring MVC
-- Spring Security
-- Spring Data JPA
-- Hibernate
+Arborescence (extrait) :
+
+gestion-actions-charite/
+- backend/                   (service Spring Boot principal)
+- frontend/                  (templates, assets statiques)
+- demo/                      (exemples / modules)
+- docker-compose.yml        
+
+---
+
+**Prérequis**
+- Java 17+ (ou JDK 21 recommandé)
 - Maven
+- Docker & Docker Compose (pour exécuter via conteneurs)
 
 ---
 
-## Frontend
+**Démarrage rapide (Docker)**
 
-- Thymeleaf
-- HTML5 / CSS3
-- Bootstrap / Tailwind CSS
-- JavaScript
-
----
-
-## Base de données
-
-- PostgreSQL / MySQL
-- MongoDB
-- H2 Database (développement)
-
----
-
-## Outils
-
-- IntelliJ IDEA
-- Postman
-- Git & GitHub
-- Docker
-- Docker Compose
-
----
-
-# 🏗️ Architecture du projet
+1. Construire et lancer tous les services (depuis la racine du projet) :
 
 ```bash
-gestion-actions-charite/
-│
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   ├── resources/
-│   │   │   ├── templates/
-│   │   │   ├── static/
-│   │   │   └── application.properties
-│   │
-│   └── test/
-│
-├── docker-compose.yml
-├── Dockerfile
-├── pom.xml
-└── README.md
+docker-compose up --build
+```
+
+2. L'application sera disponible sur http://localhost:8080 (selon configuration)
+
+---
+
+**Développement local (backend)**
+
+1. Depuis le dossier `backend` :
+
+```bash
+./mvnw spring-boot:run
+# ou
+mvn -f backend/pom.xml spring-boot:run
+```
+
+2. Templates frontend : les fichiers sous `frontend/templates` sont copiés lors du build vers `target/classes/templates`.
+
+---
+
+**Variables d'environnement importantes**
+- `SPRING_PROFILES_ACTIVE` : profil Spring (dev, prod)
+- `SPRING_DATASOURCE_URL` / `SPRING_DATASOURCE_USERNAME` / `SPRING_DATASOURCE_PASSWORD`
+- `STRIPE_API_KEY` : clé secrète Stripe
+- `SPRING_MAIL_HOST`, `SPRING_MAIL_PORT`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`
+- `OAUTH2_CLIENT_ID`, `OAUTH2_CLIENT_SECRET` (si OAuth activé)
+
+Ajoutez ces variables dans votre `.env` ou dans la configuration Docker Compose.
+
+---
+
+**Base de données**
+- En développement, le projet utilise H2 (scope test). En production, configurez PostgreSQL et mettez à jour `application.properties` ou vos variables d'environnement.
+
+---
+
+**Tests**
+
+Exécuter les tests unitaires depuis le dossier backend :
+
+```bash
+./mvnw test
+```
+
+---
+
+**Build & packaging**
+
+```bash
+./mvnw -DskipTests package
+```
+
+Pour construire une image Docker (exemple) :
+
+```bash
+docker build -t gestion-actions-charite-backend -f backend/Dockerfile .
+```
+
+---
+
+**Contribuer**
+
+- Forkez le dépôt
+- Créez une branche feature/bugfix
+- Ouvrez une pull request claire avec description et captures si nécessaire
+
+---
+
+**Aide / Dépannage**
+
+- Si la compilation échoue, vérifiez le `pom.xml` pour conflits de merge et l'encodage UTF-8.
+- Pour des problèmes liés à Docker, exécutez `docker-compose logs -f` pour suivre les logs des services.
+
+---
+
+
