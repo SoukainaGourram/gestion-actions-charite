@@ -1,85 +1,789 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${action.title} + ' — CharityApp'">Action</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        .sidebar { background: linear-gradient(180deg, #1a6b3a 0%, #145530 100%); min-height: 100vh; width: 240px; }
-        .sidebar a { color: rgba(255,255,255,0.85); text-decoration: none; padding: 10px 20px; display: block; border-radius: 8px; margin: 2px 8px; }
-        .sidebar a:hover { background: rgba(255,255,255,0.15); color: white; }
-        .sidebar .brand { font-size: 1.4rem; font-weight: 700; color: white; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); }
-        .main-content { flex: 1; background: #f8f9fa; }
-        .progress { height: 12px; border-radius: 8px; }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${action.title} + ' — HopeConnect'">Action</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" >    <style>
+        :root {
+            --primary: #061f13;
+            --primary-light: #10b981;
+            --primary-pale: #e6fcf4;
+            --accent: #d4af37;
+            --accent-light: #fef3c7;
+            --white: #ffffff;
+            --light-bg: #f8faf9;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --sidebar-w: 260px;
+            --border: rgba(16, 185, 129, 0.05);
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow: 0 10px 30px -5px rgba(6, 31, 19, 0.04), 0 1px 3px rgba(6, 31, 19, 0.01);
+            --shadow-hover: 0 20px 40px -10px rgba(6, 31, 19, 0.1), 0 1px 5px rgba(6, 31, 19, 0.03);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.6);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--light-bg); color: var(--text-main); display: flex; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: linear-gradient(195deg, #04140c 0%, #082415 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.15);
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .sidebar-brand {
+            padding: 36px 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, #10b981, var(--accent));
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #ffffff, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-nav {
+            padding: 28px 18px;
+            flex: 1;
+        }
+        .nav-section-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: rgba(255,255,255,0.25);
+            padding: 0 16px;
+            margin: 24px 0 12px;
+            font-weight: 700;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px 18px;
+            border-radius: 14px;
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            font-size: 0.94rem;
+            font-weight: 500;
+            transition: var(--transition);
+            margin-bottom: 6px;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover { 
+            background: rgba(255,255,255,0.04); 
+            color: var(--white); 
+            transform: translateX(4px);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+        .nav-link.active { 
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, rgba(212, 175, 55, 0.04) 100%); 
+            color: var(--white); 
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.05);
+            position: relative;
+        }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            left: 0; top: 25%; bottom: 25%;
+            width: 3px;
+            background: var(--accent);
+            border-radius: 0 4px 4px 0;
+        }
+        .nav-link.active .nav-icon { color: var(--accent); }
+        .nav-icon { font-size: 1.25rem; width: 22px; text-align: center; }
+        .sidebar-footer {
+            padding: 24px 18px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 18px;
+            border-radius: 14px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+        .logout-btn:hover { 
+            background: rgba(239, 68, 68, 0.08); 
+            color: #f87171; 
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        /* ── MAIN ── */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .topbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 20px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .topbar-actions { display: flex; align-items: center; gap: 20px; }
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--white);
+            color: var(--primary);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            transition: var(--transition);
+        }
+        .btn-back:hover {
+            background: var(--primary-pale);
+            color: var(--primary-light);
+            border-color: var(--primary-light);
+            transform: translateX(-3px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
+        }
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 18px 6px 6px;
+            background: var(--white);
+            border: 1px solid rgba(16, 185, 129, 0.08);
+            border-radius: 40px;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        }
+        .user-chip:hover {
+            background: rgba(16, 185, 129, 0.03);
+            border-color: rgba(16, 185, 129, 0.15);
+            transform: translateY(-1px);
+        }
+        .user-avatar {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, #0f766e, var(--accent));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        .user-name { font-size: 0.9rem; font-weight: 600; color: var(--primary); }
+
+        /* ── CONTENT ── */
+        .content { padding: 48px; }
+
+        /* Two-Column Grid */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1.8fr 1fr;
+            gap: 36px;
+            align-items: start;
+        }
+
+        .main-card {
+            background: var(--white);
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 36px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .main-card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            width: 100%;
+            height: 420px;
+            border-radius: 22px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 36px;
+            box-shadow: 0 20px 40px -15px rgba(6, 31, 19, 0.15);
+        }
+        .hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .hero-banner:hover .hero-img {
+            transform: scale(1.04);
+        }
+        .hero-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary) 0%, #154e32 100%);
+            color: var(--white);
+            font-size: 5rem;
+            position: relative;
+        }
+        .hero-placeholder::after {
+            content: '🌿';
+            font-size: 6rem;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+            animation: pulsePlaceholder 3s ease-in-out infinite;
+        }
+        @keyframes pulsePlaceholder {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .category-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 8px 18px;
+            border-radius: 30px;
+            background: var(--primary-pale);
+            color: var(--primary-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 8px 18px;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .status-badge.active {
+            background: #dcfce7;
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.15);
+        }
+        .status-badge.archived {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid rgba(100, 116, 139, 0.1);
+        }
+
+        .detail-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.25;
+            margin-bottom: 24px;
+        }
+
+        .detail-desc {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+
+        /* Metadata info row */
+        .meta-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            border-top: 1px solid rgba(16, 185, 129, 0.08);
+            padding-top: 32px;
+        }
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .meta-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+        .meta-val {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Sidebar Panels */
+        .panel-card {
+            background: var(--white);
+            border-radius: 28px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .panel-card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+        .panel-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+            padding-bottom: 12px;
+        }
+
+        /* Goal Stats */
+        .goal-stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.3rem;
+            font-weight: 700;
+            color: var(--primary-light);
+            text-align: center;
+            line-height: 1.1;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--primary-light), #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .goal-stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 28px;
+        }
+        .progress-section { margin-bottom: 12px; }
+        .progress-bar {
+            height: 12px;
+            background: #f1f5f9;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-light), #059669, var(--accent));
+            background-size: 200% auto;
+            border-radius: 20px;
+            transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: shimmerBar 2.5s linear infinite;
+        }
+        @keyframes shimmerBar {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .progress-pct {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary-light);
+            text-align: right;
+        }
+
+        /* Buttons & Forms */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 15px 28px;
+            border: none;
+            border-radius: 16px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        .btn-action-primary {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+        }
+        .btn-action-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+        .btn-action-secondary {
+            background: var(--white);
+            color: var(--primary-light);
+            border: 1.5px solid rgba(16, 185, 129, 0.25);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
+        }
+        .btn-action-secondary:hover {
+            background: var(--primary-pale);
+            color: #047857;
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.08);
+        }
+        .btn-action-warning {
+            background: rgba(212, 175, 55, 0.05);
+            color: #b45309;
+            border: 1.5px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
+        }
+        .btn-action-warning:hover {
+            background: var(--accent-light);
+            color: #92400e;
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.12);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 14px 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            background: #f8faf9;
+            border: 1.5px solid rgba(16, 185, 129, 0.1);
+            border-radius: 12px;
+            transition: var(--transition);
+        }
+        .form-control:focus {
+            outline: none;
+            background: var(--white);
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.08);
+        }
+
+        /* Gallery */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-top: 24px;
+        }
+        .gallery-item {
+            background: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+        .gallery-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+        .gallery-preview {
+            width: 100%;
+            height: 180px;
+            position: relative;
+            background: #f8fafc;
+            overflow: hidden;
+        }
+        .gallery-img, .gallery-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .gallery-item:hover .gallery-img {
+            transform: scale(1.05);
+        }
+        .gallery-body {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafbfa;
+            border-top: 1px solid rgba(16, 185, 129, 0.04);
+        }
+        .gallery-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+        }
+        .btn-delete-media {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-delete-media:hover {
+            color: #dc2626;
+            text-decoration: underline;
+        }
+
+        /* Participants List */
+        .participant-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .participant-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: var(--transition);
+        }
+        .participant-item:hover {
+            background: rgba(16, 185, 129, 0.03);
+        }
+        .participant-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-pale), #dcfce7);
+            color: var(--primary-light);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+        .participant-name {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* RTL Overrides */
+        [dir="rtl"] .sidebar {
+            left: auto;
+            right: 0;
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
+            border-left: 1px solid rgba(255, 255, 255, 0.04);
+            border-right: none;
+        }
+        [dir="rtl"] .main {
+            margin-left: 0;
+            margin-right: var(--sidebar-w);
+        }
+        [dir="rtl"] .topbar-actions {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+        }
+        [dir="rtl"] .lang-switcher {
+            margin-right: 0 !important;
+            margin-left: 20px !important;
+        }
+        [dir="rtl"] .user-chip {
+            padding: 6px 6px 6px 18px;
+        }
+        [dir="rtl"] .nav-link:hover {
+            transform: translateX(-4px);
+        }
+        [dir="rtl"] .nav-link.active {
+            border-left: none;
+            border-right: 1px solid rgba(16, 185, 129, 0.2);
+            padding-left: 18px;
+            padding-right: 18px;
+        }
+        [dir="rtl"] .nav-link.active::after {
+            left: auto;
+            right: 0;
+            border-radius: 4px 0 0 4px;
+        }
+        [dir="rtl"] .btn-back:hover {
+            transform: translateX(3px);
+        }
+        [dir="rtl"] .progress-pct {
+            text-align: left;
+        }
+        [dir="rtl"] .gallery-name {
+            text-align: right;
+        }
     </style>
 </head>
 <body>
-<div class="d-flex">
-    <div class="sidebar d-flex flex-column">
-        <div class="brand">🌿 CharityApp</div>
-        <nav class="mt-3 flex-grow-1">
-            <a th:href="@{/dashboard}"><i class="bi bi-grid me-2"></i>Dashboard</a>
-            <a th:href="@{/actions}" class="active"><i class="bi bi-heart me-2"></i>Actions</a>
-            <a th:href="@{/organisations}"><i class="bi bi-building me-2"></i>Organisations</a>
-            <a th:href="@{/profile}"><i class="bi bi-person me-2"></i>Mon Profil</a>
-        </nav>
-        <div class="p-3">
-            <a th:href="@{/logout}" class="text-white-50"><i class="bi bi-box-arrow-left me-2"></i>Déconnexion</a>
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-row">
+            <div class="brand-icon">🌿</div>
+            <span class="brand-name">HopeConnect</span>
         </div>
     </div>
-
-    <div class="main-content p-4">
-        <a th:href="@{/actions}" class="btn btn-outline-secondary btn-sm mb-3">
-            <i class="bi bi-arrow-left"></i> Retour
+    <nav class="sidebar-nav">
+        <div class="nav-section-label" th:text="#{nav.dashboard}">Navigation</div>
+        <a th:href="@{/dashboard}" class="nav-link">
+            <span class="nav-icon">⊞</span> <span th:text="#{nav.dashboard}">Dashboard</span>
         </a>
-        <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-3 p-4">
-                    <div class="d-flex gap-2 mb-3">
-                        <span class="badge bg-success bg-opacity-10 text-success fs-6"
-                              th:text="${action.category != null ? action.category : 'Général'}"></span>
-                        <span class="badge fs-6"
-                              th:classappend="${action.status == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
-                              th:text="${action.status}"></span>
+        <a th:href="@{/actions}" class="nav-link active">
+            <span class="nav-icon">♡</span> <span th:text="#{nav.actions}">Actions</span>
+        </a>
+        <a th:href="@{/organisations}" class="nav-link">
+            <span class="nav-icon">⌂</span> <span th:text="#{nav.organisations}">Organisations</span>
+        </a>
+        <a th:href="@{/profile}" class="nav-link">
+            <span class="nav-icon">◎</span> <span th:text="#{nav.profile}">Mon Profil</span>
+        </a>
+        <div sec:authorize="hasRole('SUPER_ADMIN')">
+            <div class="nav-section-label" th:text="#{nav.users}">Administration</div>
+            <a th:href="@{/admin/users}" class="nav-link">
+                <span class="nav-icon">◈</span> <span th:text="#{nav.users}">Utilisateurs</span>
+            </a>
+        </div>
+    </nav>
+    <div class="sidebar-footer">
+        <a th:href="@{/logout}" class="logout-btn">
+            <span>⎋</span> <span th:text="#{nav.logout}">Déconnexion</span>
+        </a>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <a th:href="@{/actions}" class="btn-back">
+            <span>←</span> <span th:text="#{nav.actions}">Retour</span>
+        </a>
+        <div class="topbar-actions">
+            <!-- Language switcher -->
+            <div class="lang-switcher" style="display: flex; gap: 8px; margin-right: 15px; background: var(--primary-pale); padding: 4px 8px; border-radius: 20px;">
+                <a href="?lang=fr" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'fr'} ? 'background: var(--white); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--text-muted);'">🇫🇷 FR</a>
+                <a href="?lang=ar" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'ar'} ? 'background: var(--white); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--text-muted);'">🇲🇦 AR</a>
+            </div>
+
+            <div class="user-chip">
+                <div class="user-avatar">U</div>
+                <span class="user-name">Mon espace</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="detail-grid">
+            <!-- Col Left: Action Info -->
+            <div class="detail-left">
+                <div class="main-card">
+                    <div class="hero-banner">
+                        <img th:if="${action.imageUrl != null && !action.imageUrl.isEmpty()}" th:src="${action.imageUrl}" alt="Action cover" class="hero-img">
+                        <div th:unless="${action.imageUrl != null && !action.imageUrl.isEmpty()}" class="hero-placeholder">🌿</div>
                     </div>
-                    <h3 class="fw-bold" th:text="${action.title}"></h3>
-                    <div th:if="${action.imageUrl != null}" class="mb-4">
-                        <img th:src="${action.imageUrl}" alt="Action image" class="img-fluid rounded-3" style="max-height: 420px; width:100%; object-fit:cover;" />
+
+                    <div class="badge-row">
+                        <span class="category-badge" th:text="${action.category != null ? action.category : 'Général'}"></span>
+                        <span class="status-badge" th:classappend="${action.status == 'ACTIVE'} ? 'active' : 'archived'" th:text="${action.status}"></span>
                     </div>
-                    <p class="text-muted" th:text="${action.description}"></p>
-                    <div class="row g-3 mt-2">
-                        <div class="col-sm-6">
-                            <i class="bi bi-geo-alt-fill text-success"></i>
-                            <span th:text="${action.location}"></span>
+
+                    <h1 class="detail-title" th:text="${action.title}"></h1>
+                    <p class="detail-desc" th:text="${action.description}"></p>
+
+                    <div class="meta-list">
+                        <div class="meta-item">
+                            <span class="meta-label" th:text="#{action.detail.location}">Lieu</span>
+                            <span class="meta-val">📍 <span th:text="${action.location}"></span></span>
                         </div>
-                        <div class="col-sm-6" th:if="${action.startDate != null}">
-                            <i class="bi bi-calendar-fill text-success"></i>
-                            <span th:text="${action.startDate} + ' → ' + ${action.endDate}"></span>
+                        <div class="meta-item" th:if="${action.startDate != null}">
+                            <span class="meta-label" th:text="#{action.detail.dates}">Période</span>
+                            <span class="meta-val" th:text="${action.startDate} + ' au ' + ${action.endDate}"></span>
                         </div>
-                        <div class="col-sm-6" th:if="${action.organisation != null}">
-                            <i class="bi bi-building-fill text-success"></i>
-                            <span th:text="${action.organisation.name}"></span>
+                        <div class="meta-item" th:if="${action.organisation != null}">
+                            <span class="meta-label" th:text="#{nav.organisations}">Organisation</span>
+                            <span class="meta-val" th:text="${action.organisation.name}"></span>
                         </div>
                     </div>
                 </div>
 
-                <div class="row g-3 mt-4" th:if="${action.media != null and !#lists.isEmpty(action.media)}">
-                    <div class="col-12">
-                        <h5 class="fw-semibold">Galerie média</h5>
-                    </div>
-                    <div class="col-12 col-md-6" th:each="media : ${action.media}">
-                        <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-3">
-                            <div class="ratio ratio-16x9" th:if="${#strings.startsWith(media.contentType, 'image/')}">
-                                <img th:src="${media.url}" class="w-100 h-100" style="object-fit:cover;" alt="Media image" />
+                <!-- Galerie média -->
+                <div class="main-card" style="margin-top: 32px;">
+                    <h2 class="detail-title" style="font-size: 1.25rem;" th:text="#{action.detail.gallery}">Galerie média</h2>
+                    
+                    <div class="gallery-grid" th:unless="${#lists.isEmpty(action.media)}">
+                        <div class="gallery-item" th:each="media : ${action.media}">
+                            <div class="gallery-preview">
+                                <img th:if="${#strings.startsWith(media.contentType, 'image/')}" th:src="${media.url}" class="gallery-img" alt="Gallery image">
+                                <video th:if="${#strings.startsWith(media.contentType, 'video/')}" controls class="gallery-video" th:src="${media.url}"></video>
                             </div>
-                            <div class="ratio ratio-16x9" th:if="${#strings.startsWith(media.contentType, 'video/')}">
-                                <video controls class="w-100 h-100" th:src="${media.url}"></video>
-                            </div>
-                            <div class="card-body py-3 px-3 d-flex justify-content-between align-items-center">
-                                <span class="text-muted small" th:text="${media.fileName}"></span>
-                                <button type="button" class="btn btn-link btn-sm text-danger p-0"
+                            <div class="gallery-body">
+                                <span class="gallery-name" th:text="${media.fileName}"></span>
+                                <button type="button" class="btn-delete-media"
                                         sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')"
                                         th:onclick="|deleteMedia(${media.id})|">
                                     Supprimer
@@ -87,105 +791,141 @@
                             </div>
                         </div>
                     </div>
+
+                    <p class="text-muted" style="font-size: 0.88rem; margin-top: 12px;" th:if="${#lists.isEmpty(action.media)}">Aucun fichier média disponible pour le moment.</p>
                 </div>
             </div>
 
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-3 p-4 mb-3">
-                    <h6 class="fw-bold mb-3">💰 Collecte de fonds</h6>
-                    <div class="text-center mb-3">
-                        <span class="display-6 fw-bold text-success" th:text="${action.currentAmount} + ' MAD'"></span>
-                        <div class="text-muted small" th:text="'sur ' + ${action.goalAmount} + ' MAD'"></div>
-                    </div>
-                    <div class="progress mb-2">
-                        <div class="progress-bar bg-success"
-                             th:style="'width:' + ${action.progressPercentage} + '%'"
-                             th:text="${#numbers.formatDecimal(action.progressPercentage, 1, 1)} + '%'"></div>
+            <!-- Col Right: Actions & Tools -->
+            <div class="detail-right">
+                <!-- Progress Stats -->
+                <div class="panel-card" style="border-top: 4px solid var(--accent);">
+                    <div class="panel-title">💰 <span th:text="#{actions.list.goal}">Objectif de la campagne</span></div>
+                    <div class="goal-stat-value" th:text="${action.currentAmount} + ' MAD'"></div>
+                    <div class="goal-stat-label" th:text="'récoltés sur ' + ${action.goalAmount} + ' MAD'"></div>
+                    
+                    <div class="progress-section">
+                        <div class="progress-bar">
+                            <div class="progress-fill" th:style="'width:' + ${action.progressPercentage} + '%'"></div>
+                        </div>
+                        <div class="progress-pct" th:text="${#numbers.formatDecimal(action.progressPercentage, 1, 1)} + '%'"></div>
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm rounded-3 p-4" sec:authorize="hasRole('USER')">
-                    <h6 class="fw-bold mb-3">🤝 Faire un don</h6>
-                    <div class="mb-3">
-                        <label class="form-label">Montant (MAD)</label>
-                        <input type="number" id="donationAmount" class="form-control" placeholder="100" min="1">
+                <!-- Faire un don (uniquement pour les Donateurs connectés) -->
+                <div class="panel-card" sec:authorize="hasRole('USER')">
+                    <div class="panel-title">❤️ <span th:text="#{action.detail.donate}">Faire un don</span></div>
+                    <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 16px;">Soutenez directement cette action par un paiement sécurisé. Chaque geste fait la différence.</p>
+                    <div class="form-group">
+                        <label class="form-label" th:text="#{profile.donations.amount}">Montant (MAD)</label>
+                        <input type="number" id="donationAmount" class="form-control" placeholder="250" min="1">
                     </div>
-                    <button class="btn btn-success w-100" onclick="makeDonation()">
-                        <i class="bi bi-heart me-2"></i>Donner maintenant
+                    <button class="btn-action btn-action-primary" onclick="makeDonation()">
+                        <span>❤️</span> <span th:text="#{action.detail.donate}">Faire un don</span>
                     </button>
                 </div>
 
-                <div class="card border-0 shadow-sm rounded-3 p-4 mt-3" sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')">
-                    <h6 class="fw-bold mb-3">📤 Importer un média</h6>
-                    <div class="mb-3">
-                        <label class="form-label">Image ou vidéo</label>
+                <!-- Participer (uniquement pour les Donateurs/Bénévoles connectés) -->
+                <div class="panel-card" sec:authorize="hasRole('USER')">
+                    <div class="panel-title">🤝 <span th:text="#{action.detail.participate}">Rejoindre l'action</span></div>
+                    <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 16px;">Devenez bénévole et prêtez main forte sur le terrain pour soutenir concrètement cette action.</p>
+                    <button class="btn-action btn-action-secondary" onclick="participateAction()">
+                        <span>👥</span> <span th:text="#{action.detail.participate}">Participer</span>
+                    </button>
+                </div>
+
+                <!-- Liste des Participants -->
+                <div class="panel-card">
+                    <div class="panel-title">👥 <span th:text="#{action.detail.participants}">Participants</span></div>
+                    <ul class="participant-list" th:unless="${#lists.isEmpty(action.participants)}">
+                        <li class="participant-item" th:each="p : ${action.participants}">
+                            <div class="participant-avatar" th:text="${p.name != null && !p.name.isEmpty() ? #strings.substring(p.name, 0, 1) : (p.email != null && !p.email.isEmpty() ? #strings.substring(p.email, 0, 1) : 'U')}">U</div>
+                            <span class="participant-name" th:text="${p.name != null && !p.name.isEmpty() ? p.name : (p.email != null && !p.email.isEmpty() ? p.email : 'Utilisateur')}"></span>
+                        </li>
+                    </ul>
+                    <p class="text-muted" style="font-size: 0.82rem; text-align: center;" th:if="${#lists.isEmpty(action.participants)}" th:text="#{action.detail.no.participants}">Aucun participant pour le moment.</p>
+                </div>
+
+                <!-- Admin: Import Media -->
+                <div class="panel-card" sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')">
+                    <div class="panel-title">📤 <span th:text="#{action.detail.upload}">Téléverser un média</span></div>
+                    <div class="form-group">
+                        <label class="form-label">Sélectionner un fichier (image/vidéo)</label>
                         <input type="file" id="mediaFile" class="form-control" accept="image/*,video/*">
                     </div>
-                    <button class="btn btn-outline-primary w-100" onclick="uploadMedia()">
-                        <i class="bi bi-cloud-upload me-2"></i>Importer
+                    <button class="btn-action btn-action-secondary" onclick="uploadMedia()">
+                        <span>📤</span> <span th:text="#{action.detail.upload}">Importer</span>
                     </button>
-                    <div id="mediaFeedback" class="mt-3 text-sm text-muted"></div>
+                    <div id="mediaFeedback" class="text-muted" style="font-size: 0.78rem; margin-top: 12px; text-align: center;"></div>
                 </div>
 
-                <div class="mt-3" sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')">
-                    <a th:href="@{/actions/edit/{id}(id=${action.id})}" class="btn btn-outline-warning w-100 mb-2">
-                        <i class="bi bi-pencil me-2"></i>Modifier
+                <!-- Admin: Edit Actions -->
+                <div sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')">
+                    <a th:href="@{/actions/edit/{id}(id=${action.id})}" class="btn-action btn-action-warning" style="width: 100%;">
+                        <span>✏️</span> Modifier cette action
                     </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 <script th:inline="javascript">
+/*[# th:if="${jwtToken != null}"]*/
+localStorage.setItem('token', /*[[${jwtToken}]]*/ '');
+/*[/]*/
+/*[# th:if="${currentUserId != null}"]*/
+localStorage.setItem('userId', /*[[${currentUserId}]]*/ '');
+/*[/]*/
+
 async function makeDonation() {
     const amount = document.getElementById('donationAmount').value;
     if (!amount || amount <= 0) { alert('Entrez un montant valide'); return; }
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     const actionId = /*[[${action.id}]]*/ 0;
-    const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({
-            amount: parseFloat(amount),
-            userId: userId,
-            actionId: actionId
-        })
-    });
-    if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-            window.location.href = data.url;
-            return;
+    
+    try {
+        const res = await fetch('/api/stripe/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+                amount: parseFloat(amount),
+                userId: userId,
+                actionId: actionId
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.url) {
+                window.location.href = data.url;
+                return;
+            }
         }
+        alert('Erreur lors du traitement de la transaction.');
+    } catch (err) {
+        alert('Erreur de connexion.');
     }
-    alert('Erreur lors de la création du paiement Stripe');
 }
-</script>
-<script th:inline="javascript">
-async function makeDonation() {
-    const amount = document.getElementById('donationAmount').value;
-    if (!amount || amount <= 0) { alert('Entrez un montant valide'); return; }
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
+
+async function participateAction() {
     const actionId = /*[[${action.id}]]*/ 0;
-    const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({
-            amount: parseFloat(amount),
-            userId: userId,
-            actionId: actionId
-        })
-    });
-    if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-            window.location.href = data.url;
-            return;
+    const token = localStorage.getItem('token');
+    
+    try {
+        const res = await fetch('/api/actions/' + actionId + '/participate', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+            alert('Félicitations ! Votre participation a été enregistrée.');
+            window.location.reload();
+        } else {
+            alert('Impossible de s\'inscrire à cette action.');
         }
+    } catch (err) {
+        alert('Erreur de connexion.');
     }
-    alert('Erreur lors de la création du paiement Stripe');
 }
 
 async function uploadMedia() {
@@ -201,6 +941,8 @@ async function uploadMedia() {
     const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('file', file);
+
+    feedback.textContent = 'Téléversement en cours...';
 
     const res = await fetch('/api/actions/' + actionId + '/media', {
         method: 'POST',

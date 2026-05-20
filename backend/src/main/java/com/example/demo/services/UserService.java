@@ -30,6 +30,13 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé : " + email));
     }
 
+    public User updateProfile(String email, String name, String phone) {
+        User user = findByEmail(email);
+        user.setName(name);
+        user.setPhone(phone);
+        return repo.save(user);
+    }
+
     public User save(User user) {
         return repo.save(user);
     }

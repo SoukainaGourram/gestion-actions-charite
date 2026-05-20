@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription — HopeConnect</title>
+    <title th:text="#{register.title}">Inscription — HopeConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -150,9 +152,27 @@
         }
         .login-link a:hover { color: var(--green-deep); }
         #hiddenRole { display: none; }
+
+        /* RTL Overrides */
+        [dir="rtl"] .card-header {
+            text-align: right;
+        }
+        [dir="rtl"] .form-group {
+            text-align: right;
+        }
+        [dir="rtl"] .lang-switcher {
+            right: auto;
+            left: 20px;
+        }
     </style>
 </head>
 <body>
+    <!-- Language switcher -->
+    <div class="lang-switcher" style="position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; gap: 8px; background: #e2e8e4; padding: 4px 8px; border-radius: 20px; border: 1px solid #cbd5e1;">
+        <a href="?lang=fr" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'fr'} ? 'background: var(--white); color: var(--green-deep); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--gray-text);'">🇫🇷 FR</a>
+        <a href="?lang=ar" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'ar'} ? 'background: var(--white); color: var(--green-deep); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--gray-text);'">🇲🇦 AR</a>
+    </div>
+
     <div class="register-container">
         <div class="brand">
             <div class="brand-icon">🌿</div>
@@ -161,59 +181,59 @@
 
         <div class="card">
             <div class="card-header">
-                <h2>Créer un compte</h2>
-                <p>Rejoignez notre communauté caritative</p>
+                <h2 th:text="#{register.header}">Créer un compte</h2>
+                <p th:text="#{register.subheader}">Rejoignez notre communauté caritative</p>
             </div>
 
             <form id="registerForm">
                 <div class="form-grid">
                     <div class="form-group full">
-                        <label class="form-label">Nom complet</label>
-                        <input type="text" id="name" class="form-input" placeholder="Votre nom complet" required>
+                        <label class="form-label" th:text="#{register.fullname}">Nom complet</label>
+                        <input type="text" id="name" class="form-input" th:placeholder="#{register.fullname}" required>
                     </div>
                     <div class="form-group full">
-                        <label class="form-label">Adresse email</label>
-                        <input type="email" id="email" class="form-input" placeholder="votre@email.com" required>
+                        <label class="form-label" th:text="#{register.email}">Adresse email</label>
+                        <input type="email" id="email" class="form-input" th:placeholder="#{register.email}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Téléphone</label>
-                        <input type="text" id="phone" class="form-input" placeholder="06xxxxxxxx">
+                        <label class="form-label" th:text="#{register.phone}">Téléphone</label>
+                        <input type="text" id="phone" class="form-input" th:placeholder="#{register.phone}">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Mot de passe</label>
+                        <label class="form-label" th:text="#{register.password}">Mot de passe</label>
                         <input type="password" id="password" class="form-input" placeholder="••••••••" required>
                     </div>
 
                     <div class="form-group full">
-                        <label class="form-label">Je suis...</label>
+                        <label class="form-label" th:text="#{register.role.label}">Je suis...</label>
                         <input type="hidden" id="hiddenRole" value="USER">
                         <div class="role-selector">
                             <div class="role-option selected" onclick="selectRole('USER', this)">
                                 <span class="role-emoji">🤝</span>
-                                <div class="role-title">Donateur</div>
-                                <div class="role-desc">Je veux soutenir des actions</div>
+                                <div class="role-title" th:text="#{register.role.user.title}">Donateur</div>
+                                <div class="role-desc" th:text="#{register.role.user.desc}">Je veux soutenir des actions</div>
                             </div>
                             <div class="role-option" onclick="selectRole('ORG_ADMIN', this)">
                                 <span class="role-emoji">🏢</span>
-                                <div class="role-title">Organisation</div>
-                                <div class="role-desc">Je gère des actions caritatives</div>
+                                <div class="role-title" th:text="#{register.role.org.title}">Organisation</div>
+                                <div class="role-desc" th:text="#{register.role.org.desc}">Je gère des actions caritatives</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <button type="button" class="btn-register" onclick="submitRegister()">
+                <button type="button" class="btn-register" onclick="submitRegister()" th:text="#{register.role.register}">
                     Créer mon compte →
                 </button>
             </form>
 
             <div class="login-link">
-                Déjà un compte ? <a th:href="@{/login}">Se connecter</a>
+                <span th:text="#{register.have.account}">Déjà un compte ? </span><a th:href="@{/login}" th:text="#{register.login}">Se connecter</a>
             </div>
         </div>
     </div>
 
-    <script>
+    <script th:inline="javascript">
         function selectRole(role, el) {
             document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
             el.classList.add('selected');

@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.entities.User;
 import com.example.demo.services.UserService;
 
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -28,8 +32,28 @@ public class UserController {
     @GetMapping("/profile")
     public User getProfile() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getPrincipal().toString();
+        String email = getEmailFromAuth(auth);
         return service.findByEmail(email);
+    }
+
+    @PutMapping("/profile")
+    public User updateProfile(@RequestBody User updateRequest) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = getEmailFromAuth(auth);
+        return service.updateProfile(email, updateRequest.getName(), updateRequest.getPhone());
+    }
+
+    private String getEmailFromAuth(Authentication auth) {
+        if (auth == null) {
+            throw new RuntimeException("Non authentifié");
+        }
+        Object principal = auth.getPrincipal();
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername();
+        } else if (principal instanceof OAuth2User) {
+            return ((OAuth2User) principal).getAttribute("email");
+        }
+        return principal.toString();
     }
 
     @GetMapping
@@ -40,6 +64,15 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) { return service.save(user); }
+
+
+    @PutMapping("/{id}/role")
+    public User updateRole(@PathVariable Long id, @RequestBody String role) {
+        String sanitizedRole = role.replace("\"", "").trim();
+        User user = service.findById(id);
+        user.setRole(sanitizedRole);
+        return service.save(user);
+    }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) { service.delete(id); }

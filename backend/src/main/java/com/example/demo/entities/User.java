@@ -10,7 +10,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "users")
@@ -30,6 +35,18 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Donation> donations;
+
+    @ManyToOne
+    @JoinColumn(name = "organisation_id")
+    private Organisation organisation;
+
+    @ManyToMany
+    @JoinTable(
+        name = "user_action_participations",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "action_id")
+    )
+    private List<Action> participations = new ArrayList<>();
 
     public User() {
     }
@@ -109,6 +126,22 @@ public class User {
 
     public void setDonations(List<Donation> donations) {
         this.donations = donations;
+    }
+
+    public Organisation getOrganisation() {
+        return organisation;
+    }
+
+    public void setOrganisation(Organisation organisation) {
+        this.organisation = organisation;
+    }
+
+    public List<Action> getParticipations() {
+        return participations;
+    }
+
+    public void setParticipations(List<Action> participations) {
+        this.participations = participations;
     }
 
     @Override

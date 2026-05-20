@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion — HopeConnect</title>
+    <title th:text="#{login.title}">Connexion — HopeConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -327,9 +329,38 @@
             .left-panel { display: none; }
             .right-panel { width: 100%; }
         }
+
+        /* RTL Overrides */
+        [dir="rtl"] .left-panel {
+            text-align: right;
+        }
+        [dir="rtl"] .stat-item {
+            text-align: right;
+        }
+        [dir="rtl"] .right-panel::before {
+            left: auto;
+            right: 0;
+        }
+        [dir="rtl"] .input-icon {
+            left: auto;
+            right: 14px;
+        }
+        [dir="rtl"] .form-input {
+            padding: 13px 42px 13px 14px;
+        }
+        [dir="rtl"] .lang-switcher {
+            right: auto;
+            left: 20px;
+        }
     </style>
 </head>
 <body>
+    <!-- Language switcher -->
+    <div class="lang-switcher" style="position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; gap: 8px; background: var(--gray-soft); padding: 4px 8px; border-radius: 20px; border: 1px solid #cbd5e1;">
+        <a href="?lang=fr" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'fr'} ? 'background: var(--white); color: var(--green-deep); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--gray-text);'">🇫🇷 FR</a>
+        <a href="?lang=ar" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'ar'} ? 'background: var(--white); color: var(--green-deep); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--gray-text);'">🇲🇦 AR</a>
+    </div>
+
     <!-- Left Panel -->
     <div class="left-panel">
         <div class="brand">
@@ -337,26 +368,26 @@
             <span class="brand-name">HopeConnect</span>
         </div>
 
-        <h1 class="hero-title">
+        <h1 class="hero-title" th:utext="#{login.hero.title}">
             Ensemble,<br>nous faisons<br>la <span>différence</span>
         </h1>
 
-        <p class="hero-subtitle">
+        <p class="hero-subtitle" th:text="#{login.hero.subtitle}">
             Rejoignez notre plateforme et connectez-vous avec des organisations caritatives pour créer un impact réel dans votre communauté.
         </p>
 
         <div class="stats-row">
             <div class="stat-item">
                 <div class="stat-number">500+</div>
-                <div class="stat-label">Actions créées</div>
+                <div class="stat-label" th:text="#{login.hero.stats.actions}">Actions créées</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number">120+</div>
-                <div class="stat-label">Organisations</div>
+                <div class="stat-label" th:text="#{login.hero.stats.orgs}">Organisations</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number">10k+</div>
-                <div class="stat-label">Donateurs</div>
+                <div class="stat-label" th:text="#{login.hero.stats.donors}">Donateurs</div>
             </div>
         </div>
     </div>
@@ -365,29 +396,29 @@
     <div class="right-panel">
         <div class="login-box">
             <div class="login-header">
-                <h2>Bon retour 👋</h2>
-                <p>Connectez-vous à votre espace personnel</p>
+                <h2 th:text="#{login.header}">Bon retour 👋</h2>
+                <p th:text="#{login.subheader}">Connectez-vous à votre espace personnel</p>
             </div>
 
-            <div th:if="${param.logout}" class="alert-box alert-success">
+            <div th:if="${param.logout}" class="alert-box alert-success" th:text="#{login.logout.success}">
                 ✅ Vous avez été déconnecté avec succès.
             </div>
-            <div th:if="${param.error}" class="alert-box alert-error">
+            <div th:if="${param.error}" class="alert-box alert-error" th:text="#{login.error}">
                 ❌ Email ou mot de passe incorrect.
             </div>
 
             <form th:action="@{/login}" method="post">
                 <div class="form-group">
-                    <label class="form-label">Adresse email</label>
+                    <label class="form-label" th:text="#{login.email}">Adresse email</label>
                     <div class="input-wrapper">
                         <span class="input-icon">✉</span>
                         <input type="email" name="username" class="form-input"
-                               placeholder="votre@email.com" required autocomplete="email">
+                               th:placeholder="#{login.email}" required autocomplete="email">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Mot de passe</label>
+                    <label class="form-label" th:text="#{login.password}">Mot de passe</label>
                     <div class="input-wrapper">
                         <span class="input-icon">🔒</span>
                         <input type="password" name="password" class="form-input"
@@ -395,12 +426,12 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-login">
+                <button type="submit" class="btn-login" th:text="#{login.submit}">
                     Se connecter →
                 </button>
 
                 <!-- Séparateur -->
-                <div class="divider"><span>ou</span></div>
+                <div class="divider"><span th:text="#{login.or}">ou</span></div>
 
                 <!-- ✅ Bouton Google -->
                 <a href="/oauth2/authorization/google" style="
@@ -424,15 +455,19 @@
                    onmouseout="this.style.borderColor='#e2e8e4';this.style.background='white'">
                     <img src="https://developers.google.com/identity/images/g-logo.png"
                          width="20" height="20" alt="Google">
-                    Continuer avec Google
+                    <span th:text="#{login.oauth2.google}">Continuer avec Google</span>
                 </a>
             </form>
 
             <div class="register-link">
-                Pas encore de compte ?
-                <a th:href="@{/register}">Créer un compte</a>
+                <span th:text="#{login.no.account}">Pas encore de compte ?</span>
+                <a th:href="@{/register}" th:text="#{login.register}">Créer un compte</a>
             </div>
         </div>
     </div>
+    <script>
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+    </script>
 </body>
 </html>

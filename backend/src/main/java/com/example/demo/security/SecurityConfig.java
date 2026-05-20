@@ -36,11 +36,12 @@ public class SecurityConfig {
             .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/register", "/css/**", "/js/**",
-                                 "/images/**", "/media/**").permitAll()
+                                 "/images/**", "/media/**", "/h2-console/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/organisations/approve/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/api/organisations/*/approve").hasRole("SUPER_ADMIN")
+                .requestMatchers("/api/user/*/role").hasRole("SUPER_ADMIN")
                 .requestMatchers("/actions/new", "/actions/edit/**").hasAnyRole("ORG_ADMIN", "SUPER_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/actions/**").hasAnyRole("ORG_ADMIN", "SUPER_ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/actions/**").hasAnyRole("ORG_ADMIN", "SUPER_ADMIN")
@@ -49,6 +50,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/donations/**").hasRole("USER")
                 .anyRequest().authenticated()
             )
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             // ✅ Login classique (email/password)
             .formLogin(form -> form
                 .loginPage("/login")

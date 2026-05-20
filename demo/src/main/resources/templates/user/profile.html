@@ -77,8 +77,8 @@
         <div class="profile-grid">
             <!-- Carte profil -->
             <div class="profile-card">
-                <div class="avatar-circle" th:text="${#strings.substring(user.name,0,1)}">U</div>
-                <div class="profile-name" th:text="${user.name}"></div>
+                <div class="avatar-circle" th:text="${user.name != null && !user.name.isEmpty() ? #strings.substring(user.name, 0, 1) : (user.email != null && !user.email.isEmpty() ? #strings.substring(user.email, 0, 1) : 'U')}">U</div>
+                <div class="profile-name" th:text="${user.name != null && !user.name.isEmpty() ? user.name : (user.email != null && !user.email.isEmpty() ? user.email : 'Utilisateur')}"></div>
                 <div class="profile-email" th:text="${user.email}"></div>
                 <div class="role-chip" th:text="${user.role}"></div>
                 <div class="profile-meta">

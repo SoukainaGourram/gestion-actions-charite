@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration — HopeConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green-deep: #0d3d26;
+            --green-mid: #1a6b3a;
+            --green-light: #2d9e5f;
+            --green-pale: #e8f5ee;
+            --gold: #c9a84c;
+            --white: #ffffff;
+            --gray-bg: #f4f6f4;
+            --gray-text: #6b7c6e;
+            --sidebar-w: 260px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); display: flex; min-height: 100vh; }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--green-deep);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+        }
+        .sidebar-brand {
+            padding: 28px 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--green-light), var(--gold));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            color: var(--white);
+        }
+        .sidebar-nav {
+            padding: 20px 12px;
+            flex: 1;
+        }
+        .nav-section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.3);
+            padding: 0 12px;
+            margin: 16px 0 8px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 2px;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+        .nav-link.active { background: rgba(45,158,95,0.25); color: var(--white); }
+        .nav-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.45);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .logout-btn:hover { background: rgba(255,80,80,0.1); color: #ff8080; }
+
+        /* ── MAIN ── */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .topbar {
+            background: var(--white);
+            padding: 18px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e8ede9;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .topbar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            color: var(--green-deep);
+        }
+        .topbar-actions { display: flex; align-items: center; gap: 12px; }
+
+        /* ── CONTENT ── */
+        .content { padding: 32px 36px; }
+
+        .panel {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 1px 8px rgba(13,61,38,0.06);
+            margin-bottom: 32px;
+        }
+        .panel-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            color: var(--green-deep);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-text);
+            text-align: left;
+            padding: 14px 18px;
+            background: var(--gray-bg);
+            border-bottom: 1px solid #e2e8e4;
+        }
+        td {
+            font-size: 0.875rem;
+            color: var(--green-deep);
+            padding: 14px 18px;
+            border-bottom: 1px solid #e8ede9;
+        }
+        tr:hover td {
+            background-color: #fafbfa;
+        }
+
+        /* Buttons & Badges */
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .btn-update {
+            background: var(--green-pale);
+            color: var(--green-mid);
+            border: 1px solid var(--green-light);
+        }
+        .btn-update:hover {
+            background: var(--green-mid);
+            color: white;
+        }
+        .btn-danger {
+            background: #fef2f2;
+            color: #ef4444;
+            border: 1px solid #fca5a5;
+            margin-left: 6px;
+        }
+        .btn-danger:hover {
+            background: #ef4444;
+            color: white;
+        }
+        .role-select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.8rem;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--green-deep);
+            background: white;
+            outline: none;
+        }
+        .badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+        }
+        .badge.user { background: var(--gray-bg); color: var(--gray-text); }
+        .badge.admin { background: #eff6ff; color: #1e40af; }
+        .badge.super { background: #fef3c7; color: #92400e; }
+
+        /* RTL Overrides */
+        [dir="rtl"] .sidebar {
+            left: auto;
+            right: 0;
+        }
+        [dir="rtl"] .main {
+            margin-left: 0;
+            margin-right: var(--sidebar-w);
+        }
+        [dir="rtl"] th {
+            text-align: right;
+        }
+        [dir="rtl"] .topbar-actions {
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+        }
+        [dir="rtl"] .lang-switcher {
+            margin-right: 0 !important;
+            margin-left: 15px !important;
+        }
+        [dir="rtl"] .btn-danger {
+            margin-left: 0;
+            margin-right: 6px;
+        }
+    </style>
+</head>
+<body>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-row">
+            <div class="brand-icon">🌿</div>
+            <span class="brand-name">HopeConnect</span>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label" th:text="#{nav.dashboard}">Navigation</div>
+        <a th:href="@{/dashboard}" class="nav-link">
+            <span class="nav-icon">⊞</span> <span th:text="#{nav.dashboard}">Dashboard</span>
+        </a>
+        <a th:href="@{/actions}" class="nav-link">
+            <span class="nav-icon">♡</span> <span th:text="#{nav.actions}">Actions</span>
+        </a>
+        <a th:href="@{/organisations}" class="nav-link">
+            <span class="nav-icon">⌂</span> <span th:text="#{nav.organisations}">Organisations</span>
+        </a>
+        <a th:href="@{/profile}" class="nav-link">
+            <span class="nav-icon">◎</span> <span th:text="#{nav.profile}">Mon Profil</span>
+        </a>
+        <div sec:authorize="hasRole('SUPER_ADMIN')">
+            <div class="nav-section-label" th:text="#{nav.users}">Administration</div>
+            <a th:href="@{/admin/users}" class="nav-link active">
+                <span class="nav-icon">◈</span> <span th:text="#{nav.users}">Utilisateurs</span>
+            </a>
+        </div>
+    </nav>
+    <div class="sidebar-footer">
+        <a th:href="@{/logout}" class="logout-btn">
+            <span>⎋</span> <span th:text="#{nav.logout}">Déconnexion</span>
+        </a>
+    </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-title" th:text="#{nav.users}">Utilisateurs &amp; Rôles</div>
+        <div class="topbar-actions">
+            <!-- Language switcher -->
+            <div class="lang-switcher" style="display: flex; gap: 8px; margin-right: 15px; background: var(--gray-bg); padding: 4px 8px; border-radius: 20px;">
+                <a href="?lang=fr" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'fr'} ? 'background: var(--white); color: var(--green-deep); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--gray-text);'">🇫🇷 FR</a>
+                <a href="?lang=ar" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'ar'} ? 'background: var(--white); color: var(--green-deep); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--gray-text);'">🇲🇦 AR</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+        <!-- Panel Utilisateurs -->
+        <div class="panel">
+            <div class="panel-title" th:text="#{admin.users.title}">Gestion des Utilisateurs</div>
+            <table th:unless="${#lists.isEmpty(users)}">
+                <thead>
+                    <tr>
+                        <th th:text="#{profile.name}">Nom</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${users}">
+                        <td th:text="${u.name}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${u.role == 'SUPER_ADMIN'} ? 'super' : (${u.role == 'ORG_ADMIN'} ? 'admin' : 'user')"
+                                  th:text="${u.role}"></span>
+                        </td>
+                        <td>
+                            <select th:id="'role-' + ${u.id}" class="role-select">
+                                <option value="USER" th:selected="${u.role == 'USER'}">USER</option>
+                                <option value="ORG_ADMIN" th:selected="${u.role == 'ORG_ADMIN'}">ORG_ADMIN</option>
+                                <option value="SUPER_ADMIN" th:selected="${u.role == 'SUPER_ADMIN'}">SUPER_ADMIN</option>
+                            </select>
+                            <button class="btn-action btn-update" th:onclick="'updateUserRole(' + ${u.id} + ')'" th:text="#{profile.save}">Mettre à jour</button>
+                            <button class="btn-action btn-danger" th:onclick="'deleteUser(' + ${u.id} + ')'" th:text="#{action.detail.delete}">Supprimer</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div th:if="${#lists.isEmpty(users)}" style="padding: 20px; text-align: center; color: var(--gray-text);">
+                Aucun utilisateur enregistré.
+            </div>
+        </div>
+
+        <!-- Panel Organisations -->
+        <div class="panel">
+            <div class="panel-title" th:text="#{nav.organisations}">Gestion des Organisations</div>
+            <table th:unless="${#lists.isEmpty(organisations)}">
+                <thead>
+                    <tr>
+                        <th th:text="#{profile.name}">Nom</th>
+                        <th>Contact</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="o : ${organisations}">
+                        <td th:text="${o.name}"></td>
+                        <td th:text="${o.contact}"></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${o.approved} ? 'admin' : 'user'"
+                                  th:text="${o.approved} ? #{org.list.approved} : #{org.list.unapproved}"></span>
+                        </td>
+                        <td>
+                            <button th:if="${!o.approved}"
+                                    class="btn-action btn-update"
+                                    th:onclick="'approveOrg(' + ${o.id} + ')'" th:text="#{org.list.approve}">Approuver</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div th:if="${#lists.isEmpty(organisations)}" style="padding: 20px; text-align: center; color: var(--gray-text);">
+                Aucune organisation enregistrée.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function updateUserRole(userId) {
+    const token = localStorage.getItem('token');
+    const select = document.getElementById('role-' + userId);
+    const newRole = select.value;
+
+    try {
+        const res = await fetch('/api/user/' + userId + '/role', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(newRole)
+        });
+        if (res.ok) {
+            alert('Rôle mis à jour avec succès !');
+            location.reload();
+        } else {
+            alert('Erreur lors du changement de rôle.');
+        }
+    } catch (err) {
+        alert('Erreur de connexion.');
+    }
+}
+
+async function deleteUser(userId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) return;
+    const token = localStorage.getItem('token');
+
+    try {
+        const res = await fetch('/api/user/' + userId, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+        if (res.ok) {
+            alert('Utilisateur supprimé.');
+            location.reload();
+        } else {
+            alert('Erreur lors de la suppression.');
+        }
+    } catch (err) {
+        alert('Erreur de connexion.');
+    }
+}
+
+async function approveOrg(orgId) {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('/api/organisations/' + orgId + '/approve', {
+            method: 'PATCH',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+        if (res.ok) {
+            alert('Organisation approuvée !');
+            location.reload();
+        } else {
+            alert('Erreur lors de l\'approbation.');
+        }
+    } catch (err) {
+        alert('Erreur de connexion.');
+    }
+}
+</script>
+</body>
+</html>

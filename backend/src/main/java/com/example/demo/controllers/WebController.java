@@ -118,6 +118,21 @@ public class WebController {
         return "organisations/form";
     }
 
+    // ─── Formulaire modifier organisation ────────────────────────
+    @GetMapping("/organisations/edit/{id}")
+    public String editOrgForm(@PathVariable Long id, Model model) {
+        model.addAttribute("organisation", organisationService.findById(id));
+        return "organisations/form";
+    }
+
+    // ─── Administration - Liste utilisateurs ───────────────────────
+    @GetMapping("/admin/users")
+    public String adminUsers(Model model) {
+        model.addAttribute("users", userService.getAll());
+        model.addAttribute("organisations", organisationService.getAll());
+        return "admin/users";
+    }
+
 
     @GetMapping("/profile")
     public String profile(Model model, Authentication auth) {
@@ -125,5 +140,10 @@ public class WebController {
         model.addAttribute("user", user);
         model.addAttribute("donations", donationService.getByUserId(user.getId()));
         return "user/profile";
+    }
+
+    @GetMapping("/checkout-mock")
+    public String checkoutMock() {
+        return "actions/checkout-mock";
     }
 }

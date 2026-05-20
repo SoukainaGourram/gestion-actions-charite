@@ -24,6 +24,9 @@ public class DonationController {
     @PostMapping
     public Donation create(@RequestBody Donation donation) { return service.save(donation); }
 
+    @PostMapping("/{id}/complete")
+    public Donation complete(@PathVariable Long id) { return service.completeDonation(id); }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) { service.delete(id); }
 }

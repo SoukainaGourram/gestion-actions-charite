@@ -64,13 +64,16 @@ public class StripeController {
         String successUrl = origin != null ? origin + "/actions?donationSuccess=true" : "http://localhost:8081/actions?donationSuccess=true";
         String cancelUrl = origin != null ? origin + "/actions?donationCancelled=true" : "http://localhost:8081/actions?donationCancelled=true";
 
-        try {
-            Session session = stripeService.createCheckoutSession(saved.getId(), saved.getAmount(), "mad", successUrl, cancelUrl, "Don à l'action " + (saved.getAction() != null ? saved.getAction().getTitle() : ""));
-            return ResponseEntity.ok(Map.of("url", session.getUrl()));
-        } catch (StripeException ex) {
-            logger.error("Impossible de créer la session Stripe", ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Erreur Stripe"));
+        if (stripeService.isConfigured()) {
+            try {
+                Session session = stripeService.createCheckoutSession(saved.getId(), saved.getAmount(), "mad", successUrl, cancelUrl, "Don à l'action " + (saved.getAction() != null ? saved.getAction().getTitle() : ""));
+                return ResponseEntity.ok(Map.of("url", session.getUrl()));
+            } catch (StripeException ex) {
+                logger.error("Impossible de créer la session Stripe, repli sur le mock", ex);
+            }
         }
+        String mockUrl = "/checkout-mock?donationId=" + saved.getId();
+        return ResponseEntity.ok(Map.of("url", mockUrl));
     }
 
     @PostMapping(value = "/webhook", consumes = MediaType.APPLICATION_JSON_VALUE)

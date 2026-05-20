@@ -24,7 +24,13 @@ public class StripeService {
 
     @PostConstruct
     public void init() {
-        Stripe.apiKey = stripeSecretKey;
+        if (stripeSecretKey != null && !stripeSecretKey.trim().isEmpty() && !stripeSecretKey.startsWith("${")) {
+            Stripe.apiKey = stripeSecretKey;
+        }
+    }
+
+    public boolean isConfigured() {
+        return stripeSecretKey != null && !stripeSecretKey.trim().isEmpty() && !stripeSecretKey.equals("null") && !stripeSecretKey.startsWith("${");
     }
 
     public Session createCheckoutSession(Long donationId, Double amount, String currency, String successUrl, String cancelUrl, String description) throws StripeException {

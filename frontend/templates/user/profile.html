@@ -1,52 +1,455 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
 <head>
     <meta charset="UTF-8">
     <title>Mon Profil — HopeConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     <style>
-        :root{--green-deep:#0d3d26;--green-mid:#1a6b3a;--green-light:#2d9e5f;--green-pale:#e8f5ee;--gold:#c9a84c;--white:#ffffff;--gray-bg:#f4f6f4;--gray-text:#6b7c6e;--sidebar-w:260px}
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'DM Sans',sans-serif;background:var(--gray-bg);display:flex;min-height:100vh}
-        .sidebar{width:var(--sidebar-w);background:var(--green-deep);min-height:100vh;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100}
-        .sidebar-brand{padding:28px 24px 24px;border-bottom:1px solid rgba(255,255,255,.07)}
-        .brand-row{display:flex;align-items:center;gap:12px}
-        .brand-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--green-light),var(--gold));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
-        .brand-name{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--white)}
-        .sidebar-nav{padding:20px 12px;flex:1}
-        .nav-section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);padding:0 12px;margin:16px 0 8px}
-        .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:rgba(255,255,255,.65);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s;margin-bottom:2px}
-        .nav-link:hover{background:rgba(255,255,255,.08);color:var(--white)}
-        .nav-link.active{background:rgba(45,158,95,.25);color:var(--white)}
-        .sidebar-footer{padding:16px 12px;border-top:1px solid rgba(255,255,255,.07)}
-        .logout-btn{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;color:rgba(255,255,255,.45);text-decoration:none;font-size:.875rem;transition:all .2s}
-        .logout-btn:hover{background:rgba(255,80,80,.1);color:#ff8080}
-        .main{margin-left:var(--sidebar-w);flex:1}
-        .topbar{background:var(--white);padding:18px 36px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e8ede9;position:sticky;top:0;z-index:50}
-        .topbar-title{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--green-deep)}
-        .content{padding:32px 36px}
-        .profile-grid{display:grid;grid-template-columns:300px 1fr;gap:24px}
-        .profile-card{background:var(--white);border-radius:16px;padding:32px;box-shadow:0 1px 8px rgba(13,61,38,.06);text-align:center;height:fit-content}
-        .avatar-circle{width:88px;height:88px;background:linear-gradient(135deg,var(--green-mid),var(--green-light));border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:2rem;color:white;margin:0 auto 20px}
-        .profile-name{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--green-deep);margin-bottom:4px}
-        .profile-email{font-size:.85rem;color:var(--gray-text);margin-bottom:14px}
-        .role-chip{display:inline-block;font-size:.75rem;font-weight:700;padding:5px 14px;border-radius:20px;background:var(--green-pale);color:var(--green-mid);text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px}
-        .profile-meta{font-size:.8rem;color:var(--gray-text);padding-top:16px;border-top:1px solid #f0f0f0}
-        .right-col{display:flex;flex-direction:column;gap:20px}
-        .panel{background:var(--white);border-radius:16px;padding:28px;box-shadow:0 1px 8px rgba(13,61,38,.06)}
-        .panel-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--green-deep);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #f0f0f0}
-        .form-group{margin-bottom:16px}
-        .form-label{display:block;font-size:.82rem;font-weight:600;color:var(--green-deep);margin-bottom:7px}
-        .form-input{width:100%;padding:11px 14px;border:1.5px solid #e2e8e4;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--green-deep);background:var(--gray-bg);transition:all .2s;outline:none}
-        .form-input:focus{border-color:var(--green-light);background:var(--white);box-shadow:0 0 0 3px rgba(45,158,95,.1)}
-        .btn-save{padding:11px 24px;background:linear-gradient(135deg,var(--green-mid),var(--green-light));color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
-        .btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(26,107,58,.3)}
-        table{width:100%;border-collapse:collapse}
-        th{font-size:.78rem;font-weight:600;color:var(--gray-text);text-align:left;padding:10px 14px;background:#f9fafb;border-bottom:1px solid #f0f0f0}
-        td{font-size:.85rem;color:var(--green-deep);padding:12px 14px;border-bottom:1px solid #f9faf9}
-        tr:last-child td{border-bottom:none}
-        .badge-done{font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:12px;background:#dcfce7;color:#16a34a}
-        .empty-donations{text-align:center;padding:30px;color:var(--gray-text);font-size:.9rem}
+        :root {
+            --primary: #061f13;
+            --primary-light: #10b981;
+            --primary-pale: #e6fcf4;
+            --accent: #d4af37;
+            --accent-light: #fef3c7;
+            --white: #ffffff;
+            --light-bg: #f8faf9;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --sidebar-w: 260px;
+            --border: rgba(16, 185, 129, 0.05);
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow: 0 10px 30px -5px rgba(6, 31, 19, 0.04), 0 1px 3px rgba(6, 31, 19, 0.01);
+            --shadow-hover: 0 20px 40px -10px rgba(6, 31, 19, 0.1), 0 1px 5px rgba(6, 31, 19, 0.03);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.6);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--light-bg);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: linear-gradient(195deg, #04140c 0%, #082415 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.15);
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .sidebar-brand {
+            padding: 36px 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, #10b981, var(--accent));
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #ffffff, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-nav {
+            padding: 28px 18px;
+            flex: 1;
+        }
+        .nav-section-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: rgba(255,255,255,0.25);
+            padding: 0 16px;
+            margin: 24px 0 12px;
+            font-weight: 700;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px 18px;
+            border-radius: 14px;
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            font-size: 0.94rem;
+            font-weight: 500;
+            transition: var(--transition);
+            margin-bottom: 6px;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover { 
+            background: rgba(255,255,255,0.04); 
+            color: var(--white); 
+            transform: translateX(4px);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+        .nav-link.active { 
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, rgba(212, 175, 55, 0.04) 100%); 
+            color: var(--white); 
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.05);
+            position: relative;
+        }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            left: 0; top: 25%; bottom: 25%;
+            width: 3px;
+            background: var(--accent);
+            border-radius: 0 4px 4px 0;
+        }
+        .nav-link.active .nav-icon { color: var(--accent); }
+        .nav-icon { font-size: 1.25rem; width: 22px; text-align: center; }
+        .sidebar-footer {
+            padding: 24px 18px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 18px;
+            border-radius: 14px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+        .logout-btn:hover { 
+            background: rgba(239, 68, 68, 0.08); 
+            color: #f87171; 
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        /* ── MAIN ── */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .topbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 20px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .topbar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .content {
+            padding: 48px;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 36px;
+            align-items: start;
+        }
+        .profile-card {
+            background: var(--white);
+            border-radius: 28px;
+            padding: 40px 32px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(16, 185, 129, 0.06);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .profile-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(16, 185, 129, 0.12);
+        }
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-light), var(--accent));
+        }
+        .avatar-circle {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 24px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+            border: 4px solid var(--white);
+            transition: var(--transition);
+        }
+        .profile-card:hover .avatar-circle {
+            transform: scale(1.05) rotate(5deg);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.35);
+        }
+        .profile-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+        .profile-email {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+            word-break: break-all;
+        }
+        .role-chip {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 30px;
+            background: var(--primary-pale);
+            color: var(--primary-light);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(16, 185, 129, 0.12);
+        }
+        .profile-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding-top: 24px;
+            border-top: 1px solid rgba(16, 185, 129, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+        }
+        .panel {
+            background: var(--white);
+            border-radius: 28px;
+            padding: 36px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(16, 185, 129, 0.06);
+            transition: var(--transition);
+        }
+        .panel:hover {
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(16, 185, 129, 0.1);
+        }
+        .panel-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 28px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--primary-pale);
+            position: relative;
+        }
+        .panel-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--primary-light);
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1.5px solid rgba(16, 185, 129, 0.1);
+            border-radius: 14px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            color: var(--primary);
+            background: #fafbfa;
+            transition: var(--transition);
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: var(--primary-light);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+        .btn-save {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+        }
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(16, 185, 129, 0.25);
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 8px;
+        }
+        th {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: left;
+            padding: 16px 20px;
+            background: var(--light-bg);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+        }
+        td {
+            font-size: 0.92rem;
+            color: var(--text-main);
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+            transition: var(--transition);
+        }
+        tbody tr {
+            transition: var(--transition);
+        }
+        tbody tr:hover td {
+            background: rgba(16, 185, 129, 0.02);
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .badge-done {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 30px;
+            background: #dcfce7;
+            color: #16a34a;
+            border: 1px solid rgba(22, 163, 74, 0.15);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .empty-donations {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            background: var(--light-bg);
+            border-radius: 18px;
+            border: 1px dashed rgba(16, 185, 129, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* RTL Overrides */
+        [dir="rtl"] .sidebar {
+            left: auto;
+            right: 0;
+            border-right: none;
+            border-left: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        [dir="rtl"] .main {
+            margin-left: 0;
+            margin-right: var(--sidebar-w);
+        }
+        [dir="rtl"] .nav-link:hover {
+            transform: translateX(-4px);
+        }
+        [dir="rtl"] .nav-link.active {
+            border-left: none;
+            border-right: 3px solid var(--accent);
+            padding-left: 18px;
+            padding-right: 15px;
+        }
+        [dir="rtl"] .profile-grid {
+            grid-template-columns: 1fr 320px;
+        }
+        [dir="rtl"] th {
+            text-align: right;
+        }
+        [dir="rtl"] .topbar-actions {
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+        }
+        [dir="rtl"] .lang-switcher {
+            margin-right: 0 !important;
+            margin-left: 15px !important;
+        }
+        [dir="rtl"] .panel-title::after {
+            left: auto;
+            right: 0;
+        }
     </style>
 </head>
 <body>
@@ -58,72 +461,95 @@
         </div>
     </div>
     <nav class="sidebar-nav">
-        <div class="nav-section-label">Navigation</div>
-        <a th:href="@{/dashboard}" class="nav-link"><span>⊞</span> Dashboard</a>
-        <a th:href="@{/actions}" class="nav-link"><span>♡</span> Actions</a>
-        <a th:href="@{/organisations}" class="nav-link"><span>⌂</span> Organisations</a>
-        <a th:href="@{/profile}" class="nav-link active"><span>◎</span> Mon Profil</a>
+        <div class="nav-section-label" th:text="#{nav.dashboard}">Navigation</div>
+        <a th:href="@{/dashboard}" class="nav-link">
+            <span class="nav-icon">⊞</span> <span th:text="#{nav.dashboard}">Dashboard</span>
+        </a>
+        <a th:href="@{/actions}" class="nav-link">
+            <span class="nav-icon">♡</span> <span th:text="#{nav.actions}">Actions</span>
+        </a>
+        <a th:href="@{/organisations}" class="nav-link">
+            <span class="nav-icon">⌂</span> <span th:text="#{nav.organisations}">Organisations</span>
+        </a>
+        <a th:href="@{/profile}" class="nav-link active">
+            <span class="nav-icon">◎</span> <span th:text="#{nav.profile}">Mon Profil</span>
+        </a>
+        <div sec:authorize="hasRole('SUPER_ADMIN')">
+            <div class="nav-section-label" th:text="#{nav.users}">Administration</div>
+            <a th:href="@{/admin/users}" class="nav-link">
+                <span class="nav-icon">◈</span> <span th:text="#{nav.users}">Utilisateurs</span>
+            </a>
+        </div>
     </nav>
     <div class="sidebar-footer">
-        <a th:href="@{/logout}" class="logout-btn"><span>⎋</span> Déconnexion</a>
+        <a th:href="@{/logout}" class="logout-btn">
+            <span class="nav-icon">⎋</span> <span th:text="#{nav.logout}">Déconnexion</span>
+        </a>
     </div>
 </aside>
 
 <div class="main">
     <header class="topbar">
-        <div class="topbar-title">Mon Profil</div>
+        <div class="topbar-title" th:text="#{nav.profile}">Mon Profil</div>
+        <div class="topbar-actions" style="display: flex; align-items: center; gap: 12px;">
+            <!-- Language switcher -->
+            <div class="lang-switcher" style="display: flex; gap: 8px; margin-right: 15px; background: rgba(16, 185, 129, 0.05); padding: 4px 8px; border-radius: 20px;">
+                <a href="?lang=fr" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'fr'} ? 'background: var(--white); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--text-muted);'">🇫🇷 FR</a>
+                <a href="?lang=ar" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'ar'} ? 'background: var(--white); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--text-muted);'">🇲🇦 AR</a>
+            </div>
+        </div>
     </header>
     <div class="content">
         <div class="profile-grid">
             <!-- Carte profil -->
             <div class="profile-card">
-                <div class="avatar-circle" th:text="${#strings.substring(user.name,0,1)}">U</div>
-                <div class="profile-name" th:text="${user.name}"></div>
+                <div class="avatar-circle" th:text="${user.name != null && !user.name.isEmpty() ? #strings.substring(user.name, 0, 1) : (user.email != null && !user.email.isEmpty() ? #strings.substring(user.email, 0, 1) : 'U')}">U</div>
+                <div class="profile-name" th:text="${user.name != null && !user.name.isEmpty() ? user.name : (user.email != null && !user.email.isEmpty() ? user.email : 'Utilisateur')}"></div>
                 <div class="profile-email" th:text="${user.email}"></div>
                 <div class="role-chip" th:text="${user.role}"></div>
                 <div class="profile-meta">
-                    📅 Inscrit le <span th:text="${user.registrationDate}"></span>
+                    📅 <span th:text="#{profile.subtitle}">Inscrit le</span> <span th:text="${user.registrationDate}"></span>
                 </div>
             </div>
 
             <div class="right-col">
                 <!-- Modifier profil -->
                 <div class="panel">
-                    <div class="panel-title">Modifier mes informations</div>
+                    <div class="panel-title" th:text="#{profile.info}">Modifier mes informations</div>
                     <div class="form-group">
-                        <label class="form-label">Nom complet</label>
+                        <label class="form-label" th:text="#{profile.name}">Nom complet</label>
                         <input type="text" id="name" class="form-input" th:value="${user.name}">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Téléphone</label>
+                        <label class="form-label" th:text="#{profile.phone}">Téléphone</label>
                         <input type="text" id="phone" class="form-input" th:value="${user.phone}">
                     </div>
-                    <button class="btn-save" onclick="updateProfile()">Enregistrer les modifications</button>
+                    <button class="btn-save" onclick="updateProfile()" th:text="#{profile.save}">Enregistrer les modifications</button>
                 </div>
 
                 <!-- Historique dons -->
                 <div class="panel">
-                    <div class="panel-title">Historique de mes dons</div>
+                    <div class="panel-title" th:text="#{profile.donations}">Historique de mes dons</div>
                     <table th:unless="${#lists.isEmpty(donations)}">
                         <thead>
                             <tr>
-                                <th>Action</th>
-                                <th>Montant</th>
-                                <th>Date</th>
-                                <th>Statut</th>
+                                <th th:text="#{profile.donations.action}">Action</th>
+                                <th th:text="#{profile.donations.amount}">Montant</th>
+                                <th th:text="#{profile.donations.date}">Date</th>
+                                <th th:text="#{profile.donations.status}">Statut</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="don : ${donations}">
                                 <td th:text="${don.action != null ? don.action.title : 'N/A'}"></td>
-                                <td style="font-weight:600;color:var(--green-mid)"
+                                <td style="font-weight: 700; color: var(--primary-light);"
                                     th:text="${don.amount} + ' MAD'"></td>
                                 <td th:text="${don.donationDate}"></td>
                                 <td><span class="badge-done" th:text="${don.status}"></span></td>
                             </tr>
                         </tbody>
                     </table>
-                    <div class="empty-donations" th:if="${#lists.isEmpty(donations)}">
+                    <div class="empty-donations" th:if="${#lists.isEmpty(donations)}" th:text="#{profile.donations.empty}">
                         🌱 Aucun don effectué pour le moment
                     </div>
                 </div>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{checkout.title}">Paiement Sécurisé — HopeConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2d9e5f;
+            --primary-dark: #1a6b3a;
+            --dark: #0d3d26;
+            --gold: #c9a84c;
+            --gray-light: #f4f6f4;
+            --white: #ffffff;
+            --text-dark: #1e2e24;
+            --text-muted: #6b7c6e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #f4f7f5 0%, #e6ece8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-dark);
+            position: relative;
+        }
+
+        .checkout-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(13, 61, 38, 0.08);
+            overflow: hidden;
+            border: 1px solid rgba(45, 158, 95, 0.1);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .checkout-header {
+            background: linear-gradient(135deg, var(--dark), #154e32);
+            color: var(--white);
+            padding: 32px 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .checkout-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a4f4c2, var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .checkout-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            color: var(--gold);
+            text-transform: uppercase;
+        }
+
+        .checkout-body {
+            padding: 32px 24px;
+        }
+
+        .amount-display {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .amount-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        .amount-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-top: 4px;
+        }
+
+        .card-preview {
+            background: linear-gradient(135deg, #1c1c1c 0%, #3a3a3a 100%);
+            border-radius: 16px;
+            padding: 24px;
+            color: var(--white);
+            position: relative;
+            margin-bottom: 28px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            aspect-ratio: 1.586;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .card-preview::after {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 50%;
+            top: -50px; right: -50px;
+        }
+
+        .card-chip {
+            width: 42px;
+            height: 32px;
+            background: linear-gradient(135deg, #f3d078, #c9a84c);
+            border-radius: 6px;
+        }
+
+        .card-number {
+            font-size: 1.25rem;
+            letter-spacing: 3px;
+            word-spacing: 6px;
+            font-family: monospace;
+            margin: 20px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        }
+
+        .card-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-holder {
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .card-expiry {
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--dark);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid #e2e8e4;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--dark);
+            background: #fafbfa;
+            transition: all 0.25s;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(45, 158, 95, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .info-box {
+            background: var(--gray-light);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border-left: 4px solid var(--gold);
+        }
+
+        .info-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .info-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 24px rgba(45, 158, 95, 0.2);
+        }
+
+        .btn-pay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(45, 158, 95, 0.3);
+        }
+
+        .btn-pay:active {
+            transform: translateY(0);
+        }
+
+        .btn-pay:disabled {
+            background: #a2bcae;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .cancel-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .cancel-link:hover {
+            color: #d32f2f;
+        }
+
+        /* RTL Overrides */
+        [dir="rtl"] .card-preview {
+            direction: ltr;
+        }
+        [dir="rtl"] .form-group {
+            text-align: right;
+        }
+        [dir="rtl"] .info-box {
+            border-left: none;
+            border-right: 4px solid var(--gold);
+            text-align: right;
+        }
+        [dir="rtl"] .cancel-link {
+            text-align: center;
+        }
+        [dir="rtl"] .lang-switcher {
+            right: auto;
+            left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Language switcher -->
+<div class="lang-switcher" style="position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; gap: 8px; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); padding: 4px 8px; border-radius: 20px; border: 1px solid #cbd5e1;">
+    <a href="?lang=fr" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'fr'} ? 'background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--text-dark);'">🇫🇷 FR</a>
+    <a href="?lang=ar" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'ar'} ? 'background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--text-dark);'">🇲🇦 AR</a>
+</div>
+
+<div class="checkout-container">
+    <div class="checkout-header">
+        <div class="checkout-logo">HopeConnect</div>
+        <div class="checkout-badge" th:text="#{checkout.header}">Simulation de paiement</div>
+    </div>
+
+    <div class="checkout-body">
+        <div class="amount-display">
+            <p class="amount-label" th:text="#{checkout.amount}">Montant du don</p>
+            <h2 class="amount-value" id="amountText">0.00 MAD</h2>
+        </div>
+
+        <!-- Visa Card Design Mockup -->
+        <div class="card-preview">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="card-chip"></div>
+                <div style="font-style:italic; font-weight:700; font-size:1.1rem; letter-spacing:1px;">VISA</div>
+            </div>
+            <div class="card-number" id="cardNumPreview">•••• •••• •••• ••••</div>
+            <div class="card-bottom">
+                <div>
+                    <div style="font-size:0.6rem; color:rgba(255,255,255,0.5)" th:text="#{checkout.card.holder.label}">TITULAIRE</div>
+                    <div class="card-holder" id="cardNamePreview" th:text="#{checkout.card.holder.preview}">VOTRE NOM</div>
+                </div>
+                <div>
+                    <div style="font-size:0.6rem; color:rgba(255,255,255,0.5); text-align:right">EXP</div>
+                    <div class="card-expiry" id="cardExpiryPreview">MM/AA</div>
+                </div>
+            </div>
+        </div>
+
+        <form id="paymentForm" onsubmit="processPayment(event)">
+            <div class="form-group">
+                <label class="form-label" for="cardName" th:text="#{checkout.card.name}">Nom sur la carte</label>
+                <input type="text" id="cardName" class="form-input" required placeholder="Ex : Ahmed Alami" oninput="updateCardName(this.value)">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="cardNumber" th:text="#{checkout.card.number}">Numéro de carte</label>
+                <input type="text" id="cardNumber" class="form-input" required maxlength="19" placeholder="4242 4242 4242 4242" oninput="updateCardNumber(this.value)">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="cardExpiry" th:text="#{checkout.card.expiry}">Expiration</label>
+                    <input type="text" id="cardExpiry" class="form-input" required maxlength="5" placeholder="MM/AA" oninput="updateCardExpiry(this.value)">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="cardCvc" th:text="#{checkout.card.cvc}">CVC</label>
+                    <input type="password" id="cardCvc" class="form-input" required maxlength="3" placeholder="123">
+                </div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-title" th:text="#{checkout.test.mode}">💡 Mode Test Activé</div>
+                <div class="info-desc" th:text="#{checkout.test.mode.desc}">Vous pouvez utiliser le numéro de carte de test standard Stripe 4242 4242 4242 4242 avec n'importe quelle date future pour simuler un succès.</div>
+            </div>
+
+            <button type="submit" id="btnPay" class="btn-pay">
+                <span th:text="#{checkout.pay}">Confirmer le don</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+
+            <a href="/actions" class="cancel-link" th:text="#{checkout.cancel}">Annuler et retourner au site</a>
+        </form>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const urlParams = new URLSearchParams(window.location.search);
+    const donationId = urlParams.get('donationId');
+    const holderPreviewDefault = /*[[#{checkout.card.holder.preview}]]*/ 'VOTRE NOM';
+
+    async function loadDonationDetails() {
+        if (!donationId) {
+            alert("Identifiant de don manquant.");
+            window.location.href = '/actions';
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/donations/' + donationId, {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            });
+
+            if (!res.ok) {
+                alert("Don introuvable.");
+                window.location.href = '/actions';
+                return;
+            }
+
+            const data = await res.json();
+            document.getElementById('amountText').textContent = data.amount.toFixed(2) + ' MAD';
+        } catch (err) {
+            console.error("Erreur chargement don", err);
+        }
+    }
+
+    function updateCardName(val) {
+        document.getElementById('cardNamePreview').textContent = val.toUpperCase() || holderPreviewDefault;
+    }
+
+    function updateCardNumber(val) {
+        // Format with spaces
+        let cleaned = val.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let formatted = '';
+        for (let i = 0; i < cleaned.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+                formatted += ' ';
+            }
+            formatted += cleaned[i];
+        }
+        document.getElementById('cardNumber').value = formatted;
+        document.getElementById('cardNumPreview').textContent = formatted || '•••• •••• •••• ••••';
+    }
+
+    function updateCardExpiry(val) {
+        let cleaned = val.replace(/[^0-9]/gi, '');
+        if (cleaned.length >= 2) {
+            document.getElementById('cardExpiry').value = cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4);
+        } else {
+            document.getElementById('cardExpiry').value = cleaned;
+        }
+        document.getElementById('cardExpiryPreview').textContent = document.getElementById('cardExpiry').value || 'MM/AA';
+    }
+
+    async function processPayment(event) {
+        event.preventDefault();
+
+        const btnPay = document.getElementById('btnPay');
+        const spinner = document.getElementById('spinner');
+
+        btnPay.disabled = true;
+        spinner.style.display = 'block';
+
+        // Simulate network latency for realism
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/donations/' + donationId + '/complete', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            });
+
+            if (res.ok) {
+                alert("Paiement réussi ! Merci pour votre don.");
+                window.location.href = '/actions?donationSuccess=true';
+            } else {
+                alert("Le paiement a échoué. Veuillez réessayer.");
+                btnPay.disabled = false;
+                spinner.style.display = 'none';
+            }
+        } catch (err) {
+            alert("Erreur réseau lors de la transaction.");
+            btnPay.disabled = false;
+            spinner.style.display = 'none';
+        }
+    }
+
+    // Initialize
+    loadDonationDetails();
+</script>
+
+</body>
+</html>

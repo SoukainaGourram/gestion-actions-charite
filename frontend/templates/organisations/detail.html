@@ -1,16 +1,651 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
 <head>
-  <meta charset="UTF-8"/>
-  <title>Organisation — Détails</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${organisation.name} + ' — HopeConnect'">Organisation — HopeConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green-deep: #0d3d26;
+            --green-mid: #1a6b3a;
+            --green-light: #2d9e5f;
+            --green-pale: #e8f5ee;
+            --gold: #c9a84c;
+            --gold-light: #f5e9c8;
+            --white: #ffffff;
+            --gray-bg: #f4f6f4;
+            --gray-text: #6b7c6e;
+            --sidebar-w: 260px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); display: flex; min-height: 100vh; }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--green-deep);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+        }
+        .sidebar-brand {
+            padding: 28px 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--green-light), var(--gold));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            color: var(--white);
+        }
+        .sidebar-nav {
+            padding: 20px 12px;
+            flex: 1;
+        }
+        .nav-section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.3);
+            padding: 0 12px;
+            margin: 16px 0 8px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 2px;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+        .nav-link.active { background: rgba(45,158,95,0.25); color: var(--white); }
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.45);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .logout-btn:hover { background: rgba(255,80,80,0.1); color: #ff8080; }
+
+        /* ── MAIN ── */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .topbar {
+            background: var(--white);
+            padding: 18px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e8ede9;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .topbar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            color: var(--green-deep);
+        }
+        .topbar-actions { display: flex; align-items: center; gap: 12px; }
+        .content { padding: 32px 36px; }
+
+        /* ── PREMIUM HEADER CARD ── */
+        .detail-header-card {
+            background: linear-gradient(135deg, var(--green-deep), #154e32);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 32px;
+            box-shadow: 0 10px 25px rgba(13,61,38,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+        .org-header-info {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .org-logo-large {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .org-logo-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .org-title-block {}
+        .org-name-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .org-status-badge {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: capitalize;
+        }
+        .org-status-badge.yes {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        .org-status-badge.no {
+            background: #fef9ec;
+            color: #b45309;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* ── GRID DETAILS LAYOUT ── */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 32px;
+        }
+
+        /* Cards styling */
+        .detail-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 1px 8px rgba(13,61,38,0.06);
+            margin-bottom: 32px;
+        }
+        .card-heading {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            color: var(--green-deep);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--gray-bg);
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .org-description-text {
+            font-size: 0.95rem;
+            color: var(--gray-text);
+            line-height: 1.7;
+        }
+
+        /* Info sidebar list */
+        .info-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .info-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--green-pale);
+            color: var(--green-mid);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .info-content {
+            flex: 1;
+        }
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--gray-text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .info-value {
+            font-size: 0.95rem;
+            color: var(--green-deep);
+            font-weight: 500;
+        }
+
+        /* Actions section */
+        .actions-list-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--green-deep);
+            margin-bottom: 24px;
+        }
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .action-card {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: rgba(45, 158, 95, 0.15);
+        }
+        .card-image-container {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            position: relative;
+            background: #e2e8f0;
+        }
+        .card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .action-card:hover .card-img {
+            transform: scale(1.05);
+        }
+        .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .category-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 10;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        .category-badge.education { background: #3b82f6; }
+        .category-badge.sante { background: #ef4444; }
+        .category-badge.environnement { background: #10b981; }
+        .category-badge.alimentaire { background: #f59e0b; }
+        .category-badge.autre { background: #6b7280; }
+
+        .status-dot {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+        }
+        .status-dot.archived { background: #94a3b8; box-shadow: none; }
+        .card-title {
+            font-weight: 600;
+            color: var(--green-deep);
+            font-size: 16px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .card-desc {
+            font-size: 13px;
+            color: var(--gray-text);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        .progress-section { margin-bottom: 20px; }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .progress-label { color: var(--gray-text); }
+        .progress-pct { color: #27AE60; font-weight: 700; }
+        .progress-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ECC71, #27AE60);
+            border-radius: 99px;
+            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
+            padding-top: 14px;
+        }
+        .card-location {
+            font-size: 0.82rem;
+            color: var(--gray-text);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-see {
+            font-size: 0.82rem;
+            color: white;
+            background: #10b981;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        .btn-see:hover { 
+            background: #059669; 
+            color: white; 
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+            transform: translateY(-1.5px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-text);
+            background: var(--white);
+            border-radius: 16px;
+        }
+        .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+        /* RTL Overrides */
+        [dir="rtl"] .sidebar {
+            left: auto;
+            right: 0;
+        }
+        [dir="rtl"] .main {
+            margin-left: 0;
+            margin-right: var(--sidebar-w);
+        }
+        [dir="rtl"] .lang-switcher {
+            margin-right: 0 !important;
+            margin-left: 15px !important;
+        }
+        [dir="rtl"] .topbar-actions {
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+        }
+        [dir="rtl"] .back-arrow {
+            display: inline-block;
+            transform: rotate(180deg);
+        }
+    </style>
 </head>
 <body>
-  <h1 th:text="${organisation.name}">Organisation Name</h1>
-  <p><strong>Adresse:</strong> <span th:text="${organisation.address}">Adresse</span></p>
-  <p><strong>Téléphone:</strong> <span th:text="${organisation.phone}">Téléphone</span></p>
-  <p><strong>Description:</strong></p>
-  <div th:utext="${organisation.description}">Description here</div>
 
-  <a th:href="@{/organisations}">Retour à la liste</a>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-row">
+            <div class="brand-icon">🌿</div>
+            <span class="brand-name">HopeConnect</span>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label" th:text="#{nav.dashboard}">Navigation</div>
+        <a th:href="@{/dashboard}" class="nav-link">
+            <span>⊞</span> <span th:text="#{nav.dashboard}">Dashboard</span>
+        </a>
+        <a th:href="@{/actions}" class="nav-link">
+            <span>♡</span> <span th:text="#{nav.actions}">Actions</span>
+        </a>
+        <a th:href="@{/organisations}" class="nav-link active">
+            <span>⌂</span> <span th:text="#{nav.organisations}">Organisations</span>
+        </a>
+        <a th:href="@{/profile}" class="nav-link">
+            <span>◎</span> <span th:text="#{nav.profile}">Mon Profil</span>
+        </a>
+        <div sec:authorize="hasRole('SUPER_ADMIN')">
+            <div class="nav-section-label" th:text="#{nav.users}">Administration</div>
+            <a th:href="@{/admin/users}" class="nav-link">
+                <span>◈</span> <span th:text="#{nav.users}">Utilisateurs</span>
+            </a>
+        </div>
+    </nav>
+    <div class="sidebar-footer">
+        <a th:href="@{/logout}" class="logout-btn">
+            <span>⎋</span> <span th:text="#{nav.logout}">Déconnexion</span>
+        </a>
+    </div>
+</aside>
+
+<!-- Main Area -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-title" th:text="#{org.detail.title}">Détails de l'organisation</div>
+        <div class="topbar-actions">
+            <!-- Language switcher -->
+            <div class="lang-switcher" style="display: flex; gap: 8px; background: var(--gray-bg); padding: 4px 8px; border-radius: 20px;">
+                <a href="?lang=fr" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'fr'} ? 'background: var(--white); color: var(--green-deep); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--gray-text);'">🇫🇷 FR</a>
+                <a href="?lang=ar" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'ar'} ? 'background: var(--white); color: var(--green-deep); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--gray-text);'">🇲🇦 AR</a>
+            </div>
+            
+            <div class="user-chip" style="display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; background: var(--gray-bg); border-radius: 30px;">
+                <div class="user-avatar" style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--green-mid), var(--green-light)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: white; font-weight: 600;">U</div>
+                <span class="user-name" style="font-size: 0.875rem; font-weight: 500; color: var(--green-deep);">Mon espace</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+        <!-- Header Banner Card -->
+        <div class="detail-header-card">
+            <div class="org-header-info">
+                <div class="org-logo-large">
+                    <img th:if="${organisation.logoUrl != null and !organisation.logoUrl.isEmpty()}" th:src="${organisation.logoUrl}" th:alt="${organisation.name}" />
+                    <span th:unless="${organisation.logoUrl != null and !organisation.logoUrl.isEmpty()}">🏢</span>
+                </div>
+                <div class="org-title-block">
+                    <h1 class="org-name-title" th:text="${organisation.name}">Nom de l'organisation</h1>
+                    <span class="org-status-badge"
+                          th:classappend="${organisation.approved} ? 'yes' : 'no'"
+                          th:text="${organisation.approved} ? #{org.list.approved} : #{org.list.unapproved}">Statut</span>
+                </div>
+            </div>
+            <div>
+                <a th:href="@{/organisations}" class="btn-back">
+                    <span class="back-arrow">&larr;</span>
+                    <span th:text="#{org.detail.back}">Retour à la liste</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Grid Layout for Description, Actions, and Contact details -->
+        <div class="details-grid">
+            <!-- Left Panel (Description + Actions) -->
+            <div>
+                <!-- Description Card -->
+                <div class="detail-card">
+                    <h2 class="card-heading">
+                        <span>📝</span> <span th:text="#{org.detail.description}">Description</span>
+                    </h2>
+                    <div class="org-description-text" th:utext="${organisation.description != null and !organisation.description.isEmpty() ? organisation.description : 'Aucune description disponible.'}">
+                        Description de l'organisation...
+                    </div>
+                </div>
+
+                <!-- Actions List section -->
+                <div style="margin-top: 40px; margin-bottom: 24px;">
+                    <h2 class="actions-list-title" th:text="#{org.detail.actions}">Actions de l'organisation</h2>
+                    <div class="actions-grid" th:unless="${#lists.isEmpty(actions)}">
+                    <div class="action-card" th:each="action : ${actions}">
+                        <!-- Card Image Header -->
+                        <div class="card-image-container" th:if="${action.imageUrl != null && !action.imageUrl.isEmpty()}">
+                            <img th:src="${action.imageUrl}" class="card-img" alt="Action Image">
+                            <span class="category-badge" th:classappend="${action.category}" th:text="${action.category != null ? action.category : 'Général'}"></span>
+                            <div class="status-dot" th:classappend="${action.status != 'ACTIVE'} ? 'archived' : ''"></div>
+                        </div>
+                        <div class="card-image-container" th:unless="${action.imageUrl != null && !action.imageUrl.isEmpty()}">
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--green-pale), #edf2f7); color: var(--green-light); font-size: 2.2rem;">🌿</div>
+                            <span class="category-badge" th:classappend="${action.category}" th:text="${action.category != null ? action.category : 'Général'}"></span>
+                            <div class="status-dot" th:classappend="${action.status != 'ACTIVE'} ? 'archived' : ''"></div>
+                        </div>
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <div class="card-title" th:text="${action.title}">Titre Action</div>
+                            <div class="card-desc" th:text="${#strings.abbreviate(action.description, 75)}">Description courte...</div>
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span class="progress-label">
+                                        <span th:text="${action.currentAmount}">0</span> /
+                                        <span th:text="${action.goalAmount}">0</span> MAD
+                                    </span>
+                                    <span class="progress-pct" th:text="${#numbers.formatDecimal(action.progressPercentage,1,1)} + '%'">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" th:style="'width:' + ${action.progressPercentage} + '%'"></div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <span class="card-location">📍 <span th:text="${action.location}">Lieu</span></span>
+                                <a th:href="@{/actions/{id}(id=${action.id})}" class="btn-see" th:text="#{actions.list.view}">Voir →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(actions)}">
+                    <div class="empty-icon">🌱</div>
+                    <p th:text="#{org.detail.empty.actions}">Aucune action menée par cette organisation pour le moment.</p>
+                </div>
+            </div>
+        </div>
+
+            <!-- Right Panel (Info card) -->
+            <div>
+                <div class="detail-card">
+                    <h2 class="card-heading">
+                        <span>ℹ️</span> <span th:text="#{org.detail.title}">Détails de l'organisation</span>
+                    </h2>
+                    <ul class="info-list">
+                        <!-- Address -->
+                        <li class="info-item">
+                            <div class="info-icon">📍</div>
+                            <div class="info-content">
+                                <div class="info-label" th:text="#{org.detail.address}">Adresse</div>
+                                <div class="info-value" th:text="${organisation.address != null and !organisation.address.isEmpty() ? organisation.address : 'Non spécifiée'}">Adresse de l'organisation</div>
+                            </div>
+                        </li>
+                        <!-- Contact -->
+                        <li class="info-item">
+                            <div class="info-icon">📞</div>
+                            <div class="info-content">
+                                <div class="info-label" th:text="#{org.detail.contact}">Contact</div>
+                                <div class="info-value" th:text="${organisation.contact != null and !organisation.contact.isEmpty() ? organisation.contact : 'Non spécifié'}">Contact principal</div>
+                            </div>
+                        </li>
+                        <!-- Fiscal Number -->
+                        <li class="info-item">
+                            <div class="info-icon">⚖️</div>
+                            <div class="info-content">
+                                <div class="info-label" th:text="#{org.detail.nif}">Numéro Fiscal</div>
+                                <div class="info-value" th:text="${organisation.fiscalNumber != null and !organisation.fiscalNumber.isEmpty() ? organisation.fiscalNumber : 'Non spécifié'}">NIF / Numéro Fiscal</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*[# th:if="${jwtToken != null}"]*/
+    localStorage.setItem('token', /*[[${jwtToken}]]*/ '');
+    /*[/]*/
+    /*[# th:if="${currentUserId != null}"]*/
+    localStorage.setItem('userId', /*[[${currentUserId}]]*/ '');
+    /*[/]*/
+</script>
 </body>
 </html>

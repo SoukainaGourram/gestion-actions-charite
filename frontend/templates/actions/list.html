@@ -1,61 +1,457 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actions — HopeConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --green-deep: #0d3d26; --green-mid: #1a6b3a; --green-light: #2d9e5f;
-            --green-pale: #e8f5ee; --gold: #c9a84c; --white: #ffffff;
-            --gray-bg: #f4f6f4; --gray-text: #6b7c6e; --sidebar-w: 260px;
+            --primary: #061f13;
+            --primary-light: #10b981;
+            --primary-pale: #e6fcf4;
+            --accent: #d4af37;
+            --accent-light: #fef3c7;
+            --white: #ffffff;
+            --light-bg: #f8faf9;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --sidebar-w: 260px;
+            --border: rgba(16, 185, 129, 0.05);
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow: 0 10px 30px -5px rgba(6, 31, 19, 0.04), 0 1px 3px rgba(6, 31, 19, 0.01);
+            --shadow-hover: 0 20px 40px -10px rgba(6, 31, 19, 0.1), 0 1px 5px rgba(6, 31, 19, 0.03);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.6);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); display: flex; min-height: 100vh; }
-        .sidebar { width: var(--sidebar-w); background: var(--green-deep); min-height: 100vh; display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; }
-        .sidebar-brand { padding: 28px 24px 24px; border-bottom: 1px solid rgba(255,255,255,0.07); }
-        .brand-row { display: flex; align-items: center; gap: 12px; }
-        .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--green-light), var(--gold)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-        .brand-name { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--white); }
-        .sidebar-nav { padding: 20px 12px; flex: 1; }
-        .nav-section-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.3); padding: 0 12px; margin: 16px 0 8px; }
-        .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 10px; color: rgba(255,255,255,0.65); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; margin-bottom: 2px; }
-        .nav-link:hover { background: rgba(255,255,255,0.08); color: var(--white); }
-        .nav-link.active { background: rgba(45,158,95,0.25); color: var(--white); }
-        .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.07); }
-        .logout-btn { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px; color: rgba(255,255,255,0.45); text-decoration: none; font-size: 0.875rem; transition: all 0.2s; }
-        .logout-btn:hover { background: rgba(255,80,80,0.1); color: #ff8080; }
-        .main { margin-left: var(--sidebar-w); flex: 1; }
-        .topbar { background: var(--white); padding: 18px 36px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e8ede9; position: sticky; top: 0; z-index: 50; }
-        .topbar-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--green-deep); }
-        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: linear-gradient(135deg, var(--green-mid), var(--green-light)); color: white; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,107,58,0.3); color: white; }
-        .content { padding: 32px 36px; }
-        .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
-        .filter-btn { padding: 8px 18px; border-radius: 30px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; text-decoration: none; border: 1.5px solid #e2e8e4; color: var(--gray-text); background: var(--white); transition: all 0.2s; cursor: pointer; }
-        .filter-btn:hover { border-color: var(--green-light); color: var(--green-mid); }
-        .filter-btn.active { background: var(--green-mid); border-color: var(--green-mid); color: white; }
-        .actions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .action-card { background: var(--white); border-radius: 16px; padding: 24px; box-shadow: 0 1px 8px rgba(13,61,38,0.06); transition: all 0.25s; }
-        .action-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(13,61,38,0.12); }
-        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
-        .category-badge { font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--green-pale); color: var(--green-mid); text-transform: capitalize; }
-        .status-badge { font-size: 0.7rem; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
-        .status-badge.active { background: #dcfce7; color: #16a34a; }
-        .status-badge.archived { background: #f3f4f6; color: #6b7280; }
-        .card-title { font-weight: 600; color: var(--green-deep); font-size: 0.95rem; margin-bottom: 8px; line-height: 1.3; }
-        .card-desc { font-size: 0.82rem; color: var(--gray-text); line-height: 1.5; margin-bottom: 16px; }
-        .amounts { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px; }
-        .amount-collected { color: var(--green-mid); font-weight: 600; }
-        .amount-goal { color: var(--gray-text); }
-        .progress-bar { height: 6px; background: #e8ede9; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green-mid), var(--green-light)); border-radius: 10px; }
-        .card-footer { display: flex; justify-content: space-between; align-items: center; }
-        .card-location { font-size: 0.78rem; color: var(--gray-text); }
-        .btn-see { font-size: 0.8rem; color: var(--green-mid); text-decoration: none; font-weight: 600; padding: 7px 16px; border: 1.5px solid var(--green-light); border-radius: 8px; transition: all 0.2s; }
-        .btn-see:hover { background: var(--green-pale); color: var(--green-deep); }
-        .empty-state { text-align: center; padding: 80px 20px; color: var(--gray-text); background: var(--white); border-radius: 16px; }
+        body { font-family: 'Outfit', sans-serif; background: var(--light-bg); color: var(--text-main); display: flex; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: #162716;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .sidebar-brand {
+            padding: 36px 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, #10b981, var(--accent));
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #ffffff, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-nav {
+            padding: 28px 18px;
+            flex: 1;
+        }
+        .nav-section-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: rgba(255,255,255,0.25);
+            padding: 0 16px;
+            margin: 24px 0 12px;
+            font-weight: 700;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px 18px;
+            border-radius: 14px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.94rem;
+            font-weight: 500;
+            transition: var(--transition);
+            margin-bottom: 6px;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover { 
+            background: rgba(255, 255, 255, 0.06); 
+            color: var(--white); 
+            transform: translateX(4px);
+            border-color: transparent;
+        }
+        .nav-link.active { 
+            background: rgba(16, 185, 129, 0.1); 
+            color: var(--white); 
+            border-left: 4px solid var(--primary-light);
+            border-radius: 0 14px 14px 0;
+            position: relative;
+            box-shadow: none;
+        }
+        .nav-link.active .nav-icon { color: var(--accent); }
+        .nav-icon { font-size: 1.25rem; width: 22px; text-align: center; }
+        .sidebar-footer {
+            padding: 24px 18px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 18px;
+            border-radius: 14px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+        .logout-btn:hover { 
+            background: rgba(239, 68, 68, 0.08); 
+            color: #f87171; 
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        /* ── MAIN ── */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .topbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 20px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .topbar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .topbar-actions { display: flex; align-items: center; gap: 20px; }
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary), #10b981);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+            transition: var(--transition);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 18px 6px 6px;
+            background: var(--white);
+            border: 1px solid rgba(16, 185, 129, 0.08);
+            border-radius: 40px;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        }
+        .user-chip:hover {
+            background: rgba(16, 185, 129, 0.03);
+            border-color: rgba(16, 185, 129, 0.15);
+            transform: translateY(-1px);
+        }
+        .user-avatar {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, #0f766e, var(--accent));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        .user-name { font-size: 0.9rem; font-weight: 600; color: var(--primary); }
+
+        /* ── CONTENT ── */
+        .content { padding: 48px; }
+
+        /* Filters */
+        .filters { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 36px; }
+        .filter-btn { 
+            padding: 11px 24px; 
+            border-radius: 30px; 
+            font-family: 'Outfit', sans-serif; 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+            text-decoration: none; 
+            border: 1px solid rgba(16, 185, 129, 0.15); 
+            color: var(--text-muted); 
+            background: var(--white); 
+            transition: var(--transition); 
+            cursor: pointer; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        }
+        .filter-btn:hover { 
+            border-color: #0f766e; 
+            color: #0f766e; 
+            transform: translateY(-1.5px);
+            box-shadow: 0 6px 14px rgba(16, 185, 129, 0.08);
+        }
+        .filter-btn.active { 
+            background: linear-gradient(135deg, #0f766e, #10b981); 
+            border-color: #0f766e; 
+            color: white; 
+            box-shadow: 0 6px 20px rgba(15, 118, 110, 0.25);
+        }
+
+        /* Action cards */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+        .action-card {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: rgba(16, 185, 129, 0.12);
+        }
+        .card-image-container {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+            background: #e2e8f0;
+        }
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+        .action-card:hover .card-img {
+            transform: scale(1.05);
+        }
+        .card-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .category-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 10;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        .category-badge.education { background: #3b82f6; }
+        .category-badge.sante { background: #ef4444; }
+        .category-badge.environnement { background: #10b981; }
+        .category-badge.alimentaire { background: #f59e0b; }
+        .category-badge.autre { background: #6b7280; }
+
+        .status-dot {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+        }
+        .status-dot.archived { background: #94a3b8; box-shadow: none; }
+        .card-title {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 17px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            transition: var(--transition);
+        }
+        .card-desc {
+            font-size: 13px;
+            color: #6B7280;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+        }
+        .progress-section { margin-bottom: 24px; }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .progress-label { color: var(--text-muted); }
+        .progress-pct { color: #27AE60; font-weight: 700; }
+        .progress-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ECC71, #27AE60);
+            border-radius: 99px;
+            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
+            padding-top: 16px;
+        }
+        .card-location {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-see {
+            font-size: 0.85rem;
+            color: white;
+            background: #10b981;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 30px;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        .btn-see:hover { 
+            background: #059669; 
+            color: white; 
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+            transform: translateY(-1.5px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-muted);
+            background: var(--white);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .empty-icon { font-size: 3.5rem; margin-bottom: 16px; }
+
+        /* RTL Overrides */
+        [dir="rtl"] .sidebar {
+            left: auto;
+            right: 0;
+            box-shadow: -4px 0 25px rgba(0,0,0,0.15);
+        }
+        [dir="rtl"] .main {
+            margin-left: 0;
+            margin-right: var(--sidebar-w);
+        }
+        [dir="rtl"] .topbar-actions {
+            display: flex;
+            flex-direction: row;
+            gap: 16px;
+        }
+        [dir="rtl"] .lang-switcher {
+            margin-right: 0 !important;
+            margin-left: 15px !important;
+        }
+        [dir="rtl"] .user-chip {
+            padding: 6px 6px 6px 16px;
+        }
+        [dir="rtl"] .nav-link:hover {
+            transform: translateX(-4px);
+        }
+        [dir="rtl"] .nav-link.active {
+            border-left: none;
+            border-right: 4px solid var(--primary-light);
+            border-radius: 14px 0 0 14px;
+            padding-left: 16px;
+            padding-right: 18px;
+        }
+        [dir="rtl"] .category-badge {
+            left: auto;
+            right: 12px;
+        }
+        [dir="rtl"] .status-dot {
+            right: auto;
+            left: 12px;
+        }
     </style>
 </head>
 <body>
@@ -67,69 +463,118 @@
         </div>
     </div>
     <nav class="sidebar-nav">
-        <div class="nav-section-label">Navigation</div>
-        <a th:href="@{/dashboard}" class="nav-link"><span>⊞</span> Dashboard</a>
-        <a th:href="@{/actions}" class="nav-link active"><span>♡</span> Actions</a>
-        <a th:href="@{/organisations}" class="nav-link"><span>⌂</span> Organisations</a>
-        <a th:href="@{/profile}" class="nav-link"><span>◎</span> Mon Profil</a>
+        <div class="nav-section-label" th:text="#{nav.dashboard}">Navigation</div>
+        <a th:href="@{/dashboard}" class="nav-link">
+            <span class="nav-icon">⊞</span> <span th:text="#{nav.dashboard}">Dashboard</span>
+        </a>
+        <a th:href="@{/actions}" class="nav-link active">
+            <span class="nav-icon">♡</span> <span th:text="#{nav.actions}">Actions</span>
+        </a>
+        <a th:href="@{/organisations}" class="nav-link">
+            <span class="nav-icon">⌂</span> <span th:text="#{nav.organisations}">Organisations</span>
+        </a>
+        <a th:href="@{/profile}" class="nav-link">
+            <span class="nav-icon">◎</span> <span th:text="#{nav.profile}">Mon Profil</span>
+        </a>
+        <div sec:authorize="hasRole('SUPER_ADMIN')">
+            <div class="nav-section-label" th:text="#{nav.users}">Administration</div>
+            <a th:href="@{/admin/users}" class="nav-link">
+                <span class="nav-icon">◈</span> <span th:text="#{nav.users}">Utilisateurs</span>
+            </a>
+        </div>
     </nav>
     <div class="sidebar-footer">
-        <a th:href="@{/logout}" class="logout-btn"><span>⎋</span> Déconnexion</a>
+        <a th:href="@{/logout}" class="logout-btn">
+            <span>⎋</span> <span th:text="#{nav.logout}">Déconnexion</span>
+        </a>
     </div>
 </aside>
 
 <div class="main">
     <header class="topbar">
-        <div class="topbar-title">Actions caritatives</div>
-        <div sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')">
-            <a th:href="@{/actions/new}" class="btn-primary">+ Nouvelle action</a>
+        <div class="topbar-title" th:text="#{nav.actions}">Actions caritatives</div>
+        <div class="topbar-actions">
+            <!-- Language switcher -->
+            <div class="lang-switcher" style="display: flex; gap: 8px; margin-right: 15px; background: var(--gray-bg); padding: 4px 8px; border-radius: 20px;">
+                <a href="?lang=fr" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'fr'} ? 'background: var(--white); color: var(--green-deep); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--gray-text);'">🇫🇷 FR</a>
+                <a href="?lang=ar" class="lang-btn" style="text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 12px; transition: all 0.2s;" th:styleappend="${#locale.language == 'ar'} ? 'background: var(--white); color: var(--green-deep); box-shadow: 0 2px 4px rgba(0,0,0,0.05);' : 'color: var(--gray-text);'">🇲🇦 AR</a>
+            </div>
+
+            <div sec:authorize="hasAnyRole('ORG_ADMIN','SUPER_ADMIN')">
+                <a th:href="@{/actions/new}" class="btn-primary">+ <span th:text="#{nav.actions}">Nouvelle action</span></a>
+            </div>
+            <div class="user-chip">
+                <div class="user-avatar">U</div>
+                <span class="user-name">Mon espace</span>
+            </div>
         </div>
     </header>
     <div class="content">
         <div class="filters">
             <a th:href="@{/actions}" class="filter-btn"
-               th:classappend="${selectedCategory == null} ? ' active' : ''">Toutes</a>
+               th:classappend="${selectedCategory == null} ? ' active' : ''" th:text="#{actions.list.filter.all}">Toutes</a>
             <a th:href="@{/actions(category='education')}" class="filter-btn"
-               th:classappend="${selectedCategory == 'education'} ? ' active' : ''">📚 Éducation</a>
+               th:classappend="${selectedCategory == 'education'} ? ' active' : ''">📚 <span th:text="#{actions.list.filter.education}">Éducation</span></a>
             <a th:href="@{/actions(category='sante')}" class="filter-btn"
-               th:classappend="${selectedCategory == 'sante'} ? ' active' : ''">🏥 Santé</a>
+               th:classappend="${selectedCategory == 'sante'} ? ' active' : ''">🏥 <span th:text="#{actions.list.filter.health}">Santé</span></a>
             <a th:href="@{/actions(category='environnement')}" class="filter-btn"
-               th:classappend="${selectedCategory == 'environnement'} ? ' active' : ''">🌿 Environnement</a>
+               th:classappend="${selectedCategory == 'environnement'} ? ' active' : ''">🌿 <span th:text="#{actions.list.filter.env}">Environnement</span></a>
             <a th:href="@{/actions(category='alimentaire')}" class="filter-btn"
-               th:classappend="${selectedCategory == 'alimentaire'} ? ' active' : ''">🍞 Alimentaire</a>
+               th:classappend="${selectedCategory == 'alimentaire'} ? ' active' : ''">🍞 <span th:text="#{actions.list.filter.social}">Alimentaire</span></a>
             <a th:href="@{/actions(category='autre')}" class="filter-btn"
-               th:classappend="${selectedCategory == 'autre'} ? ' active' : ''">📦 Autre</a>
+               th:classappend="${selectedCategory == 'autre'} ? ' active' : ''">📦 <span th:text="#{actions.list.filter.other}">Autre</span></a>
         </div>
 
         <div class="actions-grid" th:unless="${#lists.isEmpty(actions)}">
             <div class="action-card" th:each="action : ${actions}">
-                <div class="card-top">
-                    <span class="category-badge" th:text="${action.category != null ? action.category : 'Général'}"></span>
-                    <span class="status-badge"
-                          th:classappend="${action.status == 'ACTIVE'} ? ' active' : ' archived'"
-                          th:text="${action.status}"></span>
+                <div class="card-image-container" th:if="${action.imageUrl != null && !action.imageUrl.isEmpty()}">
+                    <img th:src="${action.imageUrl}" class="card-img" alt="Action Image">
+                    <span class="category-badge" th:classappend="${action.category}" th:text="${action.category != null ? action.category : 'Général'}"></span>
+                    <div class="status-dot" th:classappend="${action.status != 'ACTIVE'} ? 'archived' : ''"></div>
                 </div>
-                <div class="card-title" th:text="${action.title}"></div>
-                <div class="card-desc" th:text="${#strings.abbreviate(action.description, 80)}"></div>
-                <div class="amounts">
-                    <span class="amount-collected" th:text="${action.currentAmount} + ' MAD collectés'"></span>
-                    <span class="amount-goal" th:text="'/ ' + ${action.goalAmount} + ' MAD'"></span>
+                <div class="card-image-container" th:unless="${action.imageUrl != null && !action.imageUrl.isEmpty()}">
+                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary-pale), #edf2f7); color: var(--primary-light); font-size: 2.2rem;">🌿</div>
+                    <span class="category-badge" th:classappend="${action.category}" th:text="${action.category != null ? action.category : 'Général'}"></span>
+                    <div class="status-dot" th:classappend="${action.status != 'ACTIVE'} ? 'archived' : ''"></div>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" th:style="'width:' + ${action.progressPercentage} + '%'"></div>
-                </div>
-                <div class="card-footer">
-                    <span class="card-location">📍 <span th:text="${action.location}"></span></span>
-                    <a th:href="@{/actions/{id}(id=${action.id})}" class="btn-see">Voir →</a>
+                <div class="card-body">
+                    <div class="card-title" th:text="${action.title}"></div>
+                    <div class="card-desc" th:text="${#strings.abbreviate(action.description, 80)}"></div>
+                    
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span class="progress-label">
+                                <span th:text="${action.currentAmount}">0</span> /
+                                <span th:text="${action.goalAmount}">0</span> MAD
+                            </span>
+                            <span class="progress-pct" th:text="${#numbers.formatDecimal(action.progressPercentage,1,1)} + '%'"></span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" th:style="'width:' + ${action.progressPercentage} + '%'"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="card-location">📍 <span th:text="${action.location}"></span></span>
+                        <a th:href="@{/actions/{id}(id=${action.id})}" class="btn-see" th:text="#{actions.list.view}">Voir →</a>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="empty-state" th:if="${#lists.isEmpty(actions)}">
-            <div style="font-size:3rem;margin-bottom:12px;">🌱</div>
-            <p>Aucune action trouvée pour cette catégorie</p>
+            <div class="empty-icon">🌱</div>
+            <p th:text="#{actions.list.empty}">Aucune action trouvée pour cette catégorie</p>
         </div>
     </div>
 </div>
+<script th:inline="javascript">
+    /*[# th:if="${jwtToken != null}"]*/
+    localStorage.setItem('token', /*[[${jwtToken}]]*/ '');
+    /*[/]*/
+    /*[# th:if="${currentUserId != null}"]*/
+    localStorage.setItem('userId', /*[[${currentUserId}]]*/ '');
+    /*[/]*/
+</script>
 </body>
 </html>

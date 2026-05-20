@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToMany;
 
 @Entity
 public class Action {
@@ -42,6 +43,9 @@ public class Action {
 
     @OneToMany(mappedBy = "action", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Media> media = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "participations")
+    private List<User> participants = new ArrayList<>();
 
     public Action() {
     }
@@ -164,6 +168,14 @@ public class Action {
     public Double getProgressPercentage() {
         if (goalAmount == null || goalAmount == 0) return 0.0;
         return Math.min((currentAmount / goalAmount) * 100, 100.0);
+    }
+
+    public List<User> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(List<User> participants) {
+        this.participants = participants;
     }
 
     @Override
